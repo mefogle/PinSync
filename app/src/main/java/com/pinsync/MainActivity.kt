@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pinsync.ui.theme.PinSyncTheme
 
 class MainActivity : ComponentActivity() {
+    @Suppress("UNNECESSARY_SAFE_CALL") // Needed for the null Data check down below.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -49,25 +50,44 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.padding(16.dp).fillMaxWidth(), // Adjust padding as needed
                                         shape = MaterialTheme.shapes.medium, // Default shape, can be customized
                                     ) {
-                                        Column {
-                                            Text(
-                                                text = it.content[note].data.note.title,
-                                                style = MaterialTheme.typography.headlineSmall, // Title typeface
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp, start = 4.dp, end = 4.dp)
-                                            )
-                                            Text(
-                                                text = it.content[note].data.note.text,
-                                                style = MaterialTheme.typography.bodyMedium, // Smaller text typeface
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp, start = 4.dp, end = 4.dp) // Space between title and text
-                                            )
-                                            Text(
-                                                text = DateFormat.getDateFormat(this@MainActivity).format(it.content[note].data.createdAt),
-                                                style = MaterialTheme.typography.bodySmall, // Smaller text typeface
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                modifier = Modifier.padding(top = 4.dp, bottom = 8.dp, start = 4.dp, end = 4.dp) // Space between title and text
-                                            )
+                                        // Occasionally null data seems to creep through and crash.  Not sure why.
+                                        it.content[note].data?.let {
+                                            Column {
+                                                Text(
+                                                    text = it.note.title,
+                                                    style = MaterialTheme.typography.headlineSmall, // Title typeface
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.padding(
+                                                        top = 8.dp,
+                                                        bottom = 8.dp,
+                                                        start = 4.dp,
+                                                        end = 4.dp
+                                                    )
+                                                )
+                                                Text(
+                                                    text = it.note.text,
+                                                    style = MaterialTheme.typography.bodyMedium, // Smaller text typeface
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.padding(
+                                                        top = 8.dp,
+                                                        bottom = 8.dp,
+                                                        start = 4.dp,
+                                                        end = 4.dp
+                                                    ) // Space between title and text
+                                                )
+                                                Text(
+                                                    text = DateFormat.getDateFormat(this@MainActivity)
+                                                        .format(it.createdAt),
+                                                    style = MaterialTheme.typography.bodySmall, // Smaller text typeface
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.padding(
+                                                        top = 4.dp,
+                                                        bottom = 8.dp,
+                                                        start = 4.dp,
+                                                        end = 4.dp
+                                                    ) // Space between title and text
+                                                )
+                                            }
                                         }
                                     }
                                 }
