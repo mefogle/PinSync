@@ -1,4 +1,4 @@
-package com.pinsync
+package com.pinsync.model
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

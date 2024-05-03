@@ -1,4 +1,4 @@
-package com.pinsync
+package com.pinsync.model
 
 import android.util.Log
 import android.webkit.CookieManager
@@ -43,10 +43,10 @@ object PinAPI {
     data class Sort (var empty : Boolean, var sorted : Boolean, var unsorted : Boolean)
 
     @JsonClass(generateAdapter = true)
-    data class Pageable (var sort : Sort, var offset : Integer, var pageNumber : Integer, var pageSize : Integer, var paged : Boolean, var unpaged : Boolean)
+    data class Pageable (var sort : Sort, var offset : Int, var pageNumber : Int, var pageSize : Int, var paged : Boolean, var unpaged : Boolean)
 
     @JsonClass(generateAdapter = true)
-    data class Content (var content : List<Object>, val pageable : Pageable, val last : Boolean, val totalElements : Integer, val totalPages: Integer, val size : Integer, val number : Integer, val sort : Sort, val first : Boolean, val numberOfElements : Integer, val empty : Boolean)
+    data class Content (var content : List<Object>, val pageable : Pageable, val last : Boolean, val totalElements : Int, val totalPages: Int, val size : Int, val number : Int, val sort : Sort, val first : Boolean, val numberOfElements : Int, val empty : Boolean)
 
     private const val ROOTURL = "https://webapi.prod.humane.cloud/"
     private const val INITIALURL = "https://humane.center/"

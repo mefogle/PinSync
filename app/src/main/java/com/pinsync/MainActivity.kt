@@ -22,6 +22,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.pinsync.model.ContentViewModel
+import com.pinsync.model.PinAPI
+import com.pinsync.ui.AuthDialog
 import com.pinsync.ui.theme.PinSyncTheme
 
 class MainActivity : ComponentActivity() {
