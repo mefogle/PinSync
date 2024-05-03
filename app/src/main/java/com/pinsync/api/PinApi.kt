@@ -1,4 +1,4 @@
-package com.pinsync.model
+package com.pinsync.api
 
 import android.util.Log
 import android.webkit.CookieManager
@@ -22,7 +22,7 @@ import java.util.Date
 
 class APIError(message: String) : Exception(message)
 
-object PinAPI {
+object PinApi {
 
     @JsonClass(generateAdapter = true)
     data class UserInfo (val id : String, val name : String, val email : String, val givenName : String, val familyName : String, val idToken : String)
@@ -75,6 +75,8 @@ object PinAPI {
         .addConverterFactory(MoshiConverterFactory.create(moshi))
         .client(okHttpClient)
         .build()
+
+    val pinApiService = retrofit.create(PinApiService::class.java)
 
     interface HumaneApiService {
         @GET("notes")
@@ -158,7 +160,7 @@ object PinAPI {
     fun isAuthenticated() : Boolean {
         val cookie = CookieManager.getInstance().getCookie(INITIALURL)
         if ((cookie != null) && (cookie.contains(AUTHCOOKIE))) {
-            Log.d("PinAPI", "Already authenticated")
+            Log.d("PinApi", "Already authenticated")
             return true
         }
         return false
@@ -179,7 +181,7 @@ object PinAPI {
             val sessionInfo = sessionInfoAdapter.fromJson(responseBody)
             return sessionInfo?.let {
                 accessToken = it.accessToken
-                Log.d("PinAPI", "accessToken set")
+                Log.d("PinApi", "accessToken set")
                 true
             } ?: false
         }

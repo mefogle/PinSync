@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.pinsync.model.PinAPI
+import com.pinsync.api.PinApi
 
 @Composable
 fun AuthDialog(onDismissRequest: () -> Unit) {
@@ -36,7 +36,7 @@ fun AuthDialog(onDismissRequest: () -> Unit) {
                 webViewClient = object : WebViewClient() {
                     override fun onPageFinished(view: WebView, url: String?) {
                         super.onPageFinished(view, url)
-                        if (PinAPI.isAuthenticated()) {
+                        if (PinApi.isAuthenticated()) {
                             Log.d("AuthDialog", "Authentication complete")
                             onDismissRequest()
                         }
