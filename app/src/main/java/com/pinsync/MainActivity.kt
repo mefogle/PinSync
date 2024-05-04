@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pinsync.api.PinApi
@@ -93,7 +94,7 @@ class MainActivity : ComponentActivity() {
                                                                 ) // Space between title and text
                                                             )
                                                             Text(
-                                                                text = DateFormat.getDateFormat(this@MainActivity)
+                                                                text = DateFormat.getDateFormat(LocalContext.current)
                                                                     .format(it.createdAt),
                                                                 style = MaterialTheme.typography.bodySmall, // Smaller text typeface
                                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
