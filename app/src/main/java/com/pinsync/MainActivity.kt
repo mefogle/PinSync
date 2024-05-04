@@ -114,8 +114,7 @@ class MainActivity : ComponentActivity() {
                                 }
 
                                 Status.LOADING -> {
-                                    //progressBar.visibility = View.VISIBLE
-                                    //recyclerView.visibility = View.GONE
+                                    //Do we need a skeleton loader here?
                                 }
 
                                 Status.ERROR -> {
