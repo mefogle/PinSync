@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
                                             ) {
                                                 // Occasionally null values seems to creep through and crash.  Not sure why.
                                                 content?.data?.content!![note]?.let {
-                                                    it.data?.let {
+                                                    (it.data as PinApi.NoteData)?.let {
                                                         Column {
                                                             Text(
                                                                 text = it.note.title,

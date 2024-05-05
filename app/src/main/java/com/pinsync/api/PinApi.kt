@@ -2,8 +2,14 @@ package com.pinsync.api
 
 import android.util.Log
 import android.webkit.CookieManager
+import com.squareup.moshi.FromJson
+import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonClass
+import com.squareup.moshi.JsonReader
+import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.ToJson
+import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.Cookie
@@ -14,11 +20,10 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okio.IOException
-import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import retrofit2.http.GET
 import java.util.Date
+import java.util.UUID
 
 class APIError(message: String) : Exception(message)
 
@@ -30,14 +35,27 @@ object PinApi {
     @JsonClass(generateAdapter = true)
     data class SessionInfo (val user : UserInfo, val accessToken : String)
 
-    @JsonClass(generateAdapter = true)
-    data class Note (val uuid : String, var title : String, var text : String)
+    abstract class ContentData(
+        open val uuid: UUID,
+        open val location: String?,
+        open val latitude: String?,
+        open val longitude: String?,
+        open val createdAt: Date,
+        open val lastModifiedAt: Date,
+        open val state: String
+    )
 
     @JsonClass(generateAdapter = true)
-    data class Data (val uuid : String, val type : String, val location : String?, val latitude : String?, val longitude : String?, val createdAt : Date, val lastModifiedAt : Date, val state : String, val note : Note)
+    data class NoteData (override val uuid : UUID, override val location : String?, override val latitude : String?, override val longitude : String?, override val createdAt : Date, override val lastModifiedAt : Date, override val state : String, val note : Note) :
+        ContentData (uuid, location, latitude, longitude, createdAt, lastModifiedAt, state)
+    data class Note (val uuid : UUID, var title : String, var text : String)
 
     @JsonClass(generateAdapter = true)
-    data class Object (val uuid : String, val data : Data, val userLastModified : Date, val userCreatedAt : Date, val originClientId : String, val favorite : Boolean )
+    data class CaptureData (override val uuid : UUID, override val location : String?, override val latitude : String?, override val longitude : String?, override val createdAt : Date, override val lastModifiedAt : Date, override val state : String) :
+        ContentData (uuid, location, latitude, longitude, createdAt, lastModifiedAt, state)
+
+    @JsonClass(generateAdapter = true)
+    data class Object (val uuid : UUID, val data : ContentData, val userLastModified : Date, val userCreatedAt : Date, val originClientId : String, val favorite : Boolean )
 
     @JsonClass(generateAdapter = true)
     data class Sort (var empty : Boolean, var sorted : Boolean, var unsorted : Boolean)
@@ -68,7 +86,25 @@ object PinApi {
 
     private val sessionInfoAdapter = Moshi.Builder().build().adapter(SessionInfo::class.java)
 
-    private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).add(Date::class.java, Rfc3339DateJsonAdapter()).build()
+    private class UUIDAdapter : JsonAdapter<UUID>() {
+        @FromJson
+        override fun fromJson(reader: JsonReader): UUID? {
+            return UUID.fromString(reader.nextString())
+        }
+
+        @ToJson
+        override fun toJson(writer: JsonWriter, value: UUID?) {
+            writer.value(value.toString())
+        }
+    }
+
+    private val moshi = Moshi.Builder()
+        .add(UUIDAdapter())
+        .add(PolymorphicJsonAdapterFactory.of(ContentData::class.java, "type")
+            .withSubtype(NoteData::class.java, "GENERIC_NOTE")
+            .withSubtype(CaptureData::class.java, "CAPTURE"))
+        .add(KotlinJsonAdapterFactory())
+        .add(Date::class.java, Rfc3339DateJsonAdapter()).build()
 
     private val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(CAPTUREURL)
@@ -77,13 +113,6 @@ object PinApi {
         .build()
 
     val pinApiService = retrofit.create(PinApiService::class.java)
-
-    interface HumaneApiService {
-        @GET("notes")
-        fun getNotes(): Call<Content>
-    }
-
-    private val humaneApiService: HumaneApiService = retrofit.create(HumaneApiService::class.java)
 
     private var accessToken : String? = null
 
@@ -165,13 +194,6 @@ object PinApi {
         }
         return false
     }
-
-    fun notes () : Content? {
-        val response = humaneApiService.getNotes().execute()
-        if (!response.isSuccessful) throw IOException("Unexpected code $response")
-        return response.body()
-    }
-
     private fun refreshSession() : Boolean {
         sessionOkHttpClient.newCall(sessionRequest).execute().use { response ->
             if (!response.isSuccessful) throw IOException("Unexpected code $response")
