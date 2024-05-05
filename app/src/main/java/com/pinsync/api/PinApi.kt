@@ -35,6 +35,7 @@ object PinApi {
     @JsonClass(generateAdapter = true)
     data class SessionInfo (val user : UserInfo, val accessToken : String)
 
+    // Base class for Note, Photo & Video
     abstract class ContentData(
         open val uuid: UUID,
         open val location: String?,
