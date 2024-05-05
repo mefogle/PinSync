@@ -51,10 +51,6 @@ object PinApi {
     data class Note (val uuid : UUID, var title : String, var text : String)
 
     @JsonClass(generateAdapter = true)
-    data class CaptureData (override val uuid : UUID, override val location : String?, override val latitude : String?, override val longitude : String?, override val createdAt : Date, override val lastModifiedAt : Date, override val state : String) :
-        ContentData (uuid, location, latitude, longitude, createdAt, lastModifiedAt, state)
-
-    @JsonClass(generateAdapter = true)
     data class Object (val uuid : UUID, val data : ContentData, val userLastModified : Date, val userCreatedAt : Date, val originClientId : String, val favorite : Boolean )
 
     @JsonClass(generateAdapter = true)
@@ -101,8 +97,7 @@ object PinApi {
     private val moshi = Moshi.Builder()
         .add(UUIDAdapter())
         .add(PolymorphicJsonAdapterFactory.of(ContentData::class.java, "type")
-            .withSubtype(NoteData::class.java, "GENERIC_NOTE")
-            .withSubtype(CaptureData::class.java, "CAPTURE"))
+            .withSubtype(NoteData::class.java, "GENERIC_NOTE"))
         .add(KotlinJsonAdapterFactory())
         .add(Date::class.java, Rfc3339DateJsonAdapter()).build()
 
