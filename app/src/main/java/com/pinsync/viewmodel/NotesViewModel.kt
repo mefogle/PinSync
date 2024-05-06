@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import java.util.Timer
 import java.util.TimerTask
+import java.util.UUID
 
 class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel() {
 
@@ -32,6 +33,24 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
                 .collect {
                     notes.postValue(Resource.success(it))
                 }
+        }
+    }
+
+    // Note that the UUID here is the UUID of the content envelope, not the UUID of the NoteData.
+    fun setFavorite (uuid: UUID, isFavorite: Boolean){
+        for (content in notes.value?.data?.content!!) {
+            if ((content.data as PinApi.NoteData).uuid == uuid) {
+                viewModelScope.launch {
+                    // Note that we need to pass in the UUID of the content element,
+                    // not the UUID of the NoteData.
+                    if (isFavorite) {
+                        notesRepository.favoriteNote(content.uuid)
+                    } else {
+                        notesRepository.unfavoriteNote(content.uuid)
+                    }
+                }
+                break
+            }
         }
     }
 

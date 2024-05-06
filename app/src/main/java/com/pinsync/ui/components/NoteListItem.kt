@@ -62,7 +62,7 @@ fun NoteListItem(
                     onLongClick = { toggleSelection(it.uuid) }
                 )
                 .clip(CardDefaults.shape),
-            colors = CardDefaults.cardColors(
+                colors = CardDefaults.cardColors(
                 containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
                 else MaterialTheme.colorScheme.surfaceVariant
             )

@@ -46,18 +46,19 @@ class MainActivity : ComponentActivity() {
                     } else {
                         viewModel =
                             viewModel(factory = ViewModelFactory(NotesRepositoryImpl(PinApi.pinApiService)))
-                        val content by viewModel.getNotes().observeAsState()
-                        content?.let {
-                            when (content?.status) {
+                        val notesContent by viewModel.getNotes().observeAsState()
+                        notesContent?.let { content ->
+                            when (content.status) {
                                 Status.SUCCESS -> {
                                     //progressBar.visibility = View.GONE
                                     Log.d("MainActivity", "size = $content.content.size")
                                     LazyColumn {
-                                        items(content?.data?.content!!.size) { note ->
+                                        items(content.data?.content!!.size) { noteIndex ->
                                             // Occasionally null values seems to creep through and crash.  Not sure why.
-                                            content?.data?.content!![note]?.let {
-                                                NoteListItem (it.data as PinApi.NoteData,{}, {}, {},
-                                                    isSelected = true)
+                                            content.data?.content!![noteIndex]?.let { note ->
+                                                NoteListItem (note.data as PinApi.NoteData,{}, {},
+                                                    toggleFavorite = { viewModel.setFavorite(it, !content.data?.content!![noteIndex].favorite)},
+                                                    isFavorite = note.favorite)
                                             }
                                         }
                                     }
@@ -73,10 +74,7 @@ class MainActivity : ComponentActivity() {
                                     //progressBar.visibility = View.GONE
                                     Toast.makeText(this, content?.message, Toast.LENGTH_LONG).show()
                                 }
-
-                                else -> {}
                             }
-
                         }
                     }
                 }

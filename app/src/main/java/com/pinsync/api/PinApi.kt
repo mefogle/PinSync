@@ -5,6 +5,7 @@ import android.webkit.CookieManager
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonClass
+import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonReader
 import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.Moshi
@@ -31,12 +32,19 @@ object PinApi {
 
     /// The UserInfo object returned as part of the session info.
     @JsonClass(generateAdapter = true)
-    data class UserInfo (val id : String, val name : String, val email : String, val givenName : String, val familyName : String, val idToken : String)
+    data class UserInfo(
+        val id: String,
+        val name: String,
+        val email: String,
+        val givenName: String,
+        val familyName: String,
+        val idToken: String
+    )
 
     // The SessionInfo object returned as part of a successful session request.  The key attribute is the
     // accessToken.
     @JsonClass(generateAdapter = true)
-    data class SessionInfo (val user : UserInfo, val accessToken : String)
+    data class SessionInfo(val user: UserInfo, val accessToken: String)
 
     // Base class for Note, Photo & Video... There should be another abstract class above this
     // for the other data types to extend from.
@@ -52,27 +60,63 @@ object PinApi {
 
     // The NoteData and Note objects, used for all notes stored in .center
     @JsonClass(generateAdapter = true)
-    data class NoteData (override val uuid : UUID, override val location : String?, override val latitude : String?, override val longitude : String?, override val createdAt : Date, override val lastModifiedAt : Date, override val state : String, val note : Note) :
-        ContentData (uuid, location, latitude, longitude, createdAt, lastModifiedAt, state)
-    data class Note (val uuid : UUID, var title : String, var text : String)
+    data class NoteData(
+        override val uuid: UUID,
+        override val location: String?,
+        override val latitude: String?,
+        override val longitude: String?,
+        override val createdAt: Date,
+        override val lastModifiedAt: Date,
+        override val state: String,
+        val note: Note
+    ) :
+        ContentData(uuid, location, latitude, longitude, createdAt, lastModifiedAt, state)
+
+    data class Note(val uuid: UUID, var title: String, var text: String)
 
     // The Object object is used for wrapping other content types.
     @JsonClass(generateAdapter = true)
-    data class Object (val uuid : UUID, val data : ContentData, val userLastModified : Date, val userCreatedAt : Date, val originClientId : String, val favorite : Boolean )
+    data class Object(
+        val uuid: UUID,
+        val data: ContentData,
+        val userLastModified: Date,
+        val userCreatedAt: Date,
+        val originClientId: String,
+        val favorite: Boolean
+    )
 
     // Indicates the sorted/unsorted nature of the contents of a list
     @JsonClass(generateAdapter = true)
-    data class Sort (var empty : Boolean, var sorted : Boolean, var unsorted : Boolean)
+    data class Sort(var empty: Boolean, var sorted: Boolean, var unsorted: Boolean)
 
     // Indicates whether a list is pageable and, if so, where we are in that list.
     @JsonClass(generateAdapter = true)
-    data class Pageable (var sort : Sort, var offset : Int, var pageNumber : Int, var pageSize : Int, var paged : Boolean, var unpaged : Boolean)
+    data class Pageable(
+        var sort: Sort,
+        var offset: Int,
+        var pageNumber: Int,
+        var pageSize: Int,
+        var paged: Boolean,
+        var unpaged: Boolean
+    )
 
     // The outermost container, containing a list of objects.
     @JsonClass(generateAdapter = true)
-    data class Content (var content : List<Object>, val pageable : Pageable, val last : Boolean, val totalElements : Int, val totalPages: Int, val size : Int, val number : Int, val sort : Sort, val first : Boolean, val numberOfElements : Int, val empty : Boolean)
+    data class Content(
+        val content: List<Object>,
+        val pageable: Pageable,
+        val last: Boolean,
+        val totalElements: Int,
+        val totalPages: Int,
+        val size: Int,
+        val number: Int,
+        val sort: Sort,
+        val first: Boolean,
+        val numberOfElements: Int,
+        val empty: Boolean
+    )
 
-    // Various URLs that we operaate against.
+    // Various URLs that we operate against.
     private const val ROOTURL = "https://webapi.prod.humane.cloud/"
     private const val INITIALURL = "https://humane.center/"
     private const val CAPTUREURL = ROOTURL + "capture/"
@@ -82,15 +126,35 @@ object PinApi {
     // request.
     private const val AUTHCOOKIE = "__Secure-next-auth.session-token.0"
 
+    // Just leave this here in case we need it for debugging.
+
+//    private class DummyInterceptor : Interceptor {
+//        override fun intercept(chain: Interceptor.Chain): Response {
+//            val request = chain.request()
+//
+//            var response = chain.proceed(request)
+//
+//            return response;
+//
+//        }
+//    }
+
+//    private val loggingInterceptor = HttpLoggingInterceptor().apply {
+//        level = HttpLoggingInterceptor.Level.BODY
+//    }
+
     // This client is used to interact with the content server.  Note that addition of the
     // AuthInterceptor which kicks in whenever there is a 401 or 403 error.
     private val okHttpClient = OkHttpClient.Builder()
+//        .addInterceptor(DummyInterceptor())
+//        .addInterceptor(loggingInterceptor)
         .cookieJar(WebViewCookieHandler())
         .addInterceptor(AuthInterceptor())
         .build()
 
     // This client is used only for interacting with the session server.
     private val sessionOkHttpClient = OkHttpClient.Builder()
+//        .addInterceptor(loggingInterceptor)
         .cookieJar(WebViewCookieHandler())
         .build()
 
@@ -118,8 +182,10 @@ object PinApi {
     // This Moshi instance does the real work for handling the JSON serialization/deserialization
     private val moshi = Moshi.Builder()
         .add(UUIDAdapter())
-        .add(PolymorphicJsonAdapterFactory.of(ContentData::class.java, "type")
-            .withSubtype(NoteData::class.java, "GENERIC_NOTE"))
+        .add(
+            PolymorphicJsonAdapterFactory.of(ContentData::class.java, "type")
+                .withSubtype(NoteData::class.java, "GENERIC_NOTE")
+        )
         .add(KotlinJsonAdapterFactory())
         .add(Date::class.java, Rfc3339DateJsonAdapter()).build()
 
@@ -135,7 +201,7 @@ object PinApi {
 
     // If this value is non-null, we think we have a valid session, but it can
     // expire at any time.
-    private var accessToken : String? = null
+    private var accessToken: String? = null
 
     // This handler manages the propagation of cookies between the WebView cookie jar
     // and the cookie jar used by the OKHttp requests.
@@ -159,7 +225,7 @@ object PinApi {
     }
 
     // This is the interceptor that inserts the Bearer Token into all requests and
-    // handles 400 errors, refreshsing the session as needed. As a last ditch effort,
+    // handles 400 errors, refreshing the session as needed. As a last ditch effort,
     // it will delete all the cookies, forcing the user to login again.
     class AuthInterceptor : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
@@ -171,7 +237,7 @@ object PinApi {
             // throw an exception.
             accessToken ?: {
                 clearCookies()
-                throw APIError ("The user is not authorized")
+                throw APIError("The user is not authorized")
             }
 
             val request = chain.request()
@@ -199,7 +265,7 @@ object PinApi {
 
                 if (response.code == 401 || response.code == 403) {
                     clearCookies()
-                    throw APIError ("The user is not authorized")
+                    throw APIError("The user is not authorized")
                 }
             }
             return response
@@ -208,7 +274,7 @@ object PinApi {
 
     // Clear out the webkit cookies, forcing the user to login again the next
     // time the WebView is displayed.
-    private fun clearCookies () {
+    private fun clearCookies() {
         // This will trigger a reauthentication the next time we launch
         val webkitCookieManager = CookieManager.getInstance()
         webkitCookieManager.removeAllCookies(null)
@@ -216,7 +282,7 @@ object PinApi {
 
     // This checks for the cookie whose existence indicates that the user is
     // logged in.
-    fun isAuthenticated() : Boolean {
+    fun isAuthenticated(): Boolean {
         val cookie = CookieManager.getInstance().getCookie(INITIALURL)
         if ((cookie != null) && (cookie.contains(AUTHCOOKIE))) {
             Log.d("PinApi", "Already authenticated")
@@ -228,18 +294,25 @@ object PinApi {
     // Sending a request to the session URL will result in the generation of a new SessionInfo
     // object containing a valid Access Token which can, in turn, be used as the Bearer token for
     // requests to the API server.
-    private fun refreshSession() : Boolean {
+    private fun refreshSession(): Boolean {
         sessionOkHttpClient.newCall(sessionRequest).execute().use { response ->
-            if (!response.isSuccessful) throw IOException("Unexpected code $response")
-            val responseBody = response.body?.string() ?: throw NullPointerException("Response body is null")
-
-            // Parse the string into a JSON object
-            val sessionInfo = sessionInfoAdapter.fromJson(responseBody)
-            return sessionInfo?.let {
-                accessToken = it.accessToken
-                Log.d("PinApi", "accessToken set")
-                true
-            } ?: false
+            try {
+                if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                val responseBody =
+                    response.body?.string() ?: throw NullPointerException("Response body is null")
+                // Parse the string into a JSON object
+                val sessionInfo = sessionInfoAdapter.fromJson(responseBody)
+                return sessionInfo?.let {
+                    accessToken = it.accessToken
+                    Log.d("PinApi", "accessToken set")
+                    true
+                } ?: false
+            } catch (e: JsonDataException) {
+                // This is most likely because we didn't get a UserSession, meaning that the authentication
+                // is out of date, so clear the cookies and return false.
+                clearCookies()
+                return false
+            }
         }
     }
 }
