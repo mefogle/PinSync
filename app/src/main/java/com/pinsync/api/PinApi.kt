@@ -29,13 +29,17 @@ class APIError(message: String) : Exception(message)
 
 object PinApi {
 
+    /// The UserInfo object returned as part of the session info.
     @JsonClass(generateAdapter = true)
     data class UserInfo (val id : String, val name : String, val email : String, val givenName : String, val familyName : String, val idToken : String)
 
+    // The SessionInfo object returned as part of a successful session request.  The key attribute is the
+    // accessToken.
     @JsonClass(generateAdapter = true)
     data class SessionInfo (val user : UserInfo, val accessToken : String)
 
-    // Base class for Note, Photo & Video
+    // Base class for Note, Photo & Video... There should be another abstract class above this
+    // for the other data types to extend from.
     abstract class ContentData(
         open val uuid: UUID,
         open val location: String?,
@@ -46,43 +50,59 @@ object PinApi {
         open val state: String
     )
 
+    // The NoteData and Note objects, used for all notes stored in .center
     @JsonClass(generateAdapter = true)
     data class NoteData (override val uuid : UUID, override val location : String?, override val latitude : String?, override val longitude : String?, override val createdAt : Date, override val lastModifiedAt : Date, override val state : String, val note : Note) :
         ContentData (uuid, location, latitude, longitude, createdAt, lastModifiedAt, state)
     data class Note (val uuid : UUID, var title : String, var text : String)
 
+    // The Object object is used for wrapping other content types.
     @JsonClass(generateAdapter = true)
     data class Object (val uuid : UUID, val data : ContentData, val userLastModified : Date, val userCreatedAt : Date, val originClientId : String, val favorite : Boolean )
 
+    // Indicates the sorted/unsorted nature of the contents of a list
     @JsonClass(generateAdapter = true)
     data class Sort (var empty : Boolean, var sorted : Boolean, var unsorted : Boolean)
 
+    // Indicates whether a list is pageable and, if so, where we are in that list.
     @JsonClass(generateAdapter = true)
     data class Pageable (var sort : Sort, var offset : Int, var pageNumber : Int, var pageSize : Int, var paged : Boolean, var unpaged : Boolean)
 
+    // The outermost container, containing a list of objects.
     @JsonClass(generateAdapter = true)
     data class Content (var content : List<Object>, val pageable : Pageable, val last : Boolean, val totalElements : Int, val totalPages: Int, val size : Int, val number : Int, val sort : Sort, val first : Boolean, val numberOfElements : Int, val empty : Boolean)
 
+    // Various URLs that we operaate against.
     private const val ROOTURL = "https://webapi.prod.humane.cloud/"
     private const val INITIALURL = "https://humane.center/"
     private const val CAPTUREURL = ROOTURL + "capture/"
+
+    // If this cookie is present in the cookie store, it means that we should be authenticated
+    // (unless the session has expired, in which case we'll get a 403 and make another session
+    // request.
     private const val AUTHCOOKIE = "__Secure-next-auth.session-token.0"
 
+    // This client is used to interact with the content server.  Note that addition of the
+    // AuthInterceptor which kicks in whenever there is a 401 or 403 error.
     private val okHttpClient = OkHttpClient.Builder()
         .cookieJar(WebViewCookieHandler())
         .addInterceptor(AuthInterceptor())
         .build()
 
+    // This client is used only for interacting with the session server.
     private val sessionOkHttpClient = OkHttpClient.Builder()
         .cookieJar(WebViewCookieHandler())
         .build()
 
+    // The request that triggers creation of a new session.
     private val sessionRequest = Request.Builder()
         .url(INITIALURL + "api/auth/session")
         .build()
 
+    // The adapter that only processes SessionInfo JSON.
     private val sessionInfoAdapter = Moshi.Builder().build().adapter(SessionInfo::class.java)
 
+    // Java UUIDs can't be parsed natively so we need this special adapter.
     private class UUIDAdapter : JsonAdapter<UUID>() {
         @FromJson
         override fun fromJson(reader: JsonReader): UUID? {
@@ -95,6 +115,7 @@ object PinApi {
         }
     }
 
+    // This Moshi instance does the real work for handling the JSON serialization/deserialization
     private val moshi = Moshi.Builder()
         .add(UUIDAdapter())
         .add(PolymorphicJsonAdapterFactory.of(ContentData::class.java, "type")
@@ -102,16 +123,22 @@ object PinApi {
         .add(KotlinJsonAdapterFactory())
         .add(Date::class.java, Rfc3339DateJsonAdapter()).build()
 
+    // And retrofit handles the REST communications.
     private val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(CAPTUREURL)
         .addConverterFactory(MoshiConverterFactory.create(moshi))
         .client(okHttpClient)
         .build()
 
+    // The single instance of the API service.
     val pinApiService = retrofit.create(PinApiService::class.java)
 
+    // If this value is non-null, we think we have a valid session, but it can
+    // expire at any time.
     private var accessToken : String? = null
 
+    // This handler manages the propagation of cookies between the WebView cookie jar
+    // and the cookie jar used by the OKHttp requests.
     class WebViewCookieHandler : CookieJar {
         private val webkitCookieManager = CookieManager.getInstance()
 
@@ -131,6 +158,9 @@ object PinApi {
         }
     }
 
+    // This is the interceptor that inserts the Bearer Token into all requests and
+    // handles 400 errors, refreshsing the session as needed. As a last ditch effort,
+    // it will delete all the cookies, forcing the user to login again.
     class AuthInterceptor : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
 
@@ -176,12 +206,16 @@ object PinApi {
         }
     }
 
+    // Clear out the webkit cookies, forcing the user to login again the next
+    // time the WebView is displayed.
     private fun clearCookies () {
         // This will trigger a reauthentication the next time we launch
         val webkitCookieManager = CookieManager.getInstance()
         webkitCookieManager.removeAllCookies(null)
     }
 
+    // This checks for the cookie whose existence indicates that the user is
+    // logged in.
     fun isAuthenticated() : Boolean {
         val cookie = CookieManager.getInstance().getCookie(INITIALURL)
         if ((cookie != null) && (cookie.contains(AUTHCOOKIE))) {
@@ -190,6 +224,10 @@ object PinApi {
         }
         return false
     }
+
+    // Sending a request to the session URL will result in the generation of a new SessionInfo
+    // object containing a valid Access Token which can, in turn, be used as the Bearer token for
+    // requests to the API server.
     private fun refreshSession() : Boolean {
         sessionOkHttpClient.newCall(sessionRequest).execute().use { response ->
             if (!response.isSuccessful) throw IOException("Unexpected code $response")
