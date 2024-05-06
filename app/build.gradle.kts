@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.retrofit.converter.moshi)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.runtime.livedata)
+    implementation(libs.androidx.compose.material.iconsExtended)
     ksp(libs.moshi.kotlin.codegen)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
