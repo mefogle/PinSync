@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pinsync.api.PinApi
 import com.pinsync.data.NotesRepositoryImpl
@@ -46,35 +47,26 @@ class MainActivity : ComponentActivity() {
                     } else {
                         viewModel =
                             viewModel(factory = ViewModelFactory(NotesRepositoryImpl(PinApi.pinApiService)))
-                        val notesContent by viewModel.getNotes().observeAsState()
-                        notesContent?.let { content ->
-                            when (content.status) {
-                                Status.SUCCESS -> {
+                        //val notesContent by viewModel.getNotes().observeAsState()
+                        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                        uiState.notes?.let { content ->
                                     //progressBar.visibility = View.GONE
                                     Log.d("MainActivity", "size = $content.content.size")
                                     LazyColumn {
-                                        items(content.data?.content!!.size) { noteIndex ->
+                                        items(content!!.size) { noteIndex ->
                                             // Occasionally null values seems to creep through and crash.  Not sure why.
-                                            content.data?.content!![noteIndex]?.let { note ->
-                                                NoteListItem (note.data as PinApi.NoteData,{}, {},
-                                                    toggleFavorite = { viewModel.setFavorite(it, !content.data?.content!![noteIndex].favorite)},
+                                            content!![noteIndex]?.let { note ->
+                                                NoteListItem (note.data as PinApi.NoteData,{},
+                                                    toggleFavorite = { viewModel.setFavorite(note.uuid,
+                                                        !note.favorite)},
+                                                    toggleSelection = {
+                                                        viewModel.toggleSelectedNote(note.uuid)
+                                                    },
+                                                    isSelected = uiState.selectedNotes.contains(note.uuid),
                                                     isFavorite = note.favorite)
                                             }
                                         }
-                                    }
-                                    //recyclerView.visibility = View.VISIBLE
                                 }
-
-                                Status.LOADING -> {
-                                    //Do we need a skeleton loader here?
-                                }
-
-                                Status.ERROR -> {
-                                    //Handle Error
-                                    //progressBar.visibility = View.GONE
-                                    Toast.makeText(this, content?.message, Toast.LENGTH_LONG).show()
-                                }
-                            }
                         }
                     }
                 }

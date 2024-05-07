@@ -19,66 +19,55 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
 
     private val _uiState = MutableStateFlow(NotesUIState(loading = true))
     val uiState: StateFlow<NotesUIState> = _uiState
-    private val notes = MutableLiveData<Resource<PinApi.Content>>()
     private var timer: Timer? = null
 
     init {
+        // Initialize the UI state to loading
+        _uiState.value = NotesUIState(loading = true)
         fetchNotes()
         startPeriodicTask()
     }
 
     private fun fetchNotes() {
         viewModelScope.launch {
-            notes.postValue(Resource.loading(null))
             notesRepository.getAllNotes()
                 .catch { e ->
                     _uiState.value = NotesUIState(error = e.message)
-                    notes.postValue(Resource.error(e.toString(), null))
                 }
-                .collect {
-                    _uiState.value = NotesUIState (
-
-                    )
-                    notes.postValue(Resource.success(it))
+                .collect { content ->
+                    _uiState.value = NotesUIState (notes = content.content, loading = false)
                 }
         }
     }
 
     // Note that the UUID here is the UUID of the content envelope, not the UUID of the NoteData.
     fun setFavorite (uuid: UUID, isFavorite: Boolean){
-        for (content in notes.value?.data?.content!!) {
-            if ((content.data as PinApi.NoteData).uuid == uuid) {
-                viewModelScope.launch {
-                    // Note that we need to pass in the UUID of the content element,
-                    // not the UUID of the NoteData.
-                    if (isFavorite) {
-                        notesRepository.favoriteNote(content.uuid)
-                    } else {
-                        notesRepository.unfavoriteNote(content.uuid)
-                    }
-                }
-                break
+        viewModelScope.launch {
+            // Note that we need to pass in the UUID of the content element,
+            // not the UUID of the NoteData.
+            if (isFavorite) {
+                notesRepository.favoriteNote(uuid)
+            } else {
+                notesRepository.unfavoriteNote(uuid)
             }
+            // This will make the favorite state update more quickly.
+            fetchNotes()
         }
     }
 
-    fun getNotes(): LiveData<Resource<PinApi.Content>> {
-        return notes
+    fun toggleSelectedNote(noteId: UUID) {
+        val currentSelection = uiState.value.selectedNotes
+        _uiState.value = _uiState.value.copy(
+            selectedNotes = if (currentSelection.contains(noteId))
+                currentSelection.minus(noteId) else currentSelection.plus(noteId)
+        )
     }
 
     private fun startPeriodicTask() {
         timer = Timer()
         timer?.schedule(object : TimerTask() {
             override fun run() {
-                viewModelScope.launch {
-                    notesRepository.getAllNotes()
-                        .catch { e ->
-                            notes.postValue(Resource.error(e.toString(), null))
-                        }
-                        .collect {
-                            notes.postValue(Resource.success(it))
-                        }
-                }
+                fetchNotes()
             }
         }, 0, 5000) // Schedule the task to run every 5 seconds
     }
@@ -89,7 +78,8 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
 }
 
 data class NotesUIState(
-    val notes: List<PinApi.Content> = emptyList(),
+    val notes: List<PinApi.Object> = emptyList(),
+    // The UUIDs in this set are the UUIDs of the content elements that are selected.
     val selectedNotes: Set<UUID> = emptySet(),
     val loading: Boolean = false,
     val error: String? = null

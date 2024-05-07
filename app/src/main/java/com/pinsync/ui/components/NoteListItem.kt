@@ -47,9 +47,9 @@ import java.util.UUID
 @Composable
 fun NoteListItem(
     noteData: PinApi.NoteData,
-    navigateToDetail: (UUID) -> Unit,
-    toggleSelection: (UUID) -> Unit,
-    toggleFavorite: (UUID) -> Unit,
+    navigateToDetail: () -> Unit,
+    toggleSelection: () -> Unit,
+    toggleFavorite: () -> Unit,
     modifier: Modifier = Modifier,
     isSelected: Boolean = false,
     isFavorite: Boolean = false
@@ -61,8 +61,8 @@ fun NoteListItem(
                 .semantics { selected = isSelected }
                 .clip(CardDefaults.shape)
                 .combinedClickable(
-                    onClick = { navigateToDetail(it.uuid) },
-                    onLongClick = { toggleSelection(it.uuid) }
+                    onClick = { navigateToDetail() },
+                    onLongClick = { toggleSelection() }
                 )
                 .clip(CardDefaults.shape),
                 colors = CardDefaults.cardColors(
@@ -79,7 +79,7 @@ fun NoteListItem(
                     val clickModifier = Modifier.clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
-                    ) { toggleSelection(it.uuid) }
+                    ) { toggleSelection() }
                     AnimatedContent(targetState = isSelected, label = "avatar") { selected ->
                         if (selected) {
                             SelectedImage(clickModifier)
@@ -117,7 +117,7 @@ fun NoteListItem(
                         )
                     }
                     IconButton(
-                        onClick = { toggleFavorite(it.uuid) },
+                        onClick = { toggleFavorite() },
                         modifier = Modifier
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
