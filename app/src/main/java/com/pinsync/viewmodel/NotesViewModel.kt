@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.pinsync.api.PinApi
 import com.pinsync.data.NotesRepository
 import com.pinsync.util.Resource
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import java.util.Timer
@@ -15,6 +17,8 @@ import java.util.UUID
 
 class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel() {
 
+    private val _uiState = MutableStateFlow(NotesUIState(loading = true))
+    val uiState: StateFlow<NotesUIState> = _uiState
     private val notes = MutableLiveData<Resource<PinApi.Content>>()
     private var timer: Timer? = null
 
@@ -28,9 +32,13 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
             notes.postValue(Resource.loading(null))
             notesRepository.getAllNotes()
                 .catch { e ->
+                    _uiState.value = NotesUIState(error = e.message)
                     notes.postValue(Resource.error(e.toString(), null))
                 }
                 .collect {
+                    _uiState.value = NotesUIState (
+
+                    )
                     notes.postValue(Resource.success(it))
                 }
         }
@@ -79,3 +87,10 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
         timer?.cancel() // Cancel the timer when the ViewModel is cleared
     }
 }
+
+data class NotesUIState(
+    val notes: List<PinApi.Content> = emptyList(),
+    val selectedNotes: Set<UUID> = emptySet(),
+    val loading: Boolean = false,
+    val error: String? = null
+)

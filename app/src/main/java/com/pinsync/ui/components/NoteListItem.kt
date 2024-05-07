@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.StickyNote2
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
@@ -31,10 +32,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.pinsync.R
 import com.pinsync.api.PinApi
 import java.util.UUID
 
@@ -121,7 +124,7 @@ fun NoteListItem(
                     ) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
-                            contentDescription = "Favorite",
+                            contentDescription = stringResource(R.string.favorite_description),
                             tint = MaterialTheme.colorScheme.outline
                         )
                     }
@@ -158,13 +161,13 @@ fun UnselectedImage(modifier: Modifier = Modifier) {
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.primary)
     ) {
-//        Icon(
-//            Icons.Default.Check,
-//            contentDescription = null,
-//            modifier = Modifier
-//                .size(24.dp)
-//                .align(Alignment.Center),
-//            tint = MaterialTheme.colorScheme.onPrimary
-//        )
+        Icon(
+            Icons.AutoMirrored.Filled.StickyNote2,
+            contentDescription = stringResource(R.string.note_description),
+            modifier = Modifier
+                .size(24.dp)
+                .align(Alignment.Center),
+            tint = MaterialTheme.colorScheme.onPrimary
+        )
     }
 }

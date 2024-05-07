@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PinSync</string>
+    <string name="note_description">Note</string>
+    <string name="favorite_description">Favorite</string>
 </resources>
