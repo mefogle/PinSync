@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
                                 LazyColumn {
                                     items(content!!.size) { noteIndex ->
                                         // Occasionally null values seems to creep through and crash.  Not sure why.
-                                        content!!.elementAt(noteIndex)?.let { note ->
+                                        content.elementAt(noteIndex)?.let { note ->
                                             NoteListItem(
                                                 note.data as PinApi.NoteData, {},
                                                 toggleFavorite = {
