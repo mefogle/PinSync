@@ -35,7 +35,25 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
                     _uiState.value = NotesUIState(error = e.message)
                 }
                 .collect { content ->
-                    _uiState.value = NotesUIState (notes = content.content, loading = false)
+                    val noteMap =  mutableMapOf<UUID, PinApi.Object>()
+                    for (note in content.content) {
+                        noteMap[note.uuid] = note
+                    }
+                    _uiState.value = NotesUIState(notes = noteMap, loading = false)
+                }
+        }
+    }
+
+    private fun fetchNote(uuid: UUID) {
+        viewModelScope.launch {
+            notesRepository.getNote(uuid)
+                .catch { e ->
+                    _uiState.value = NotesUIState(error = e.message)
+                }
+                .collect { content ->
+                    val notesMap = uiState.value.notes.toMutableMap()
+                    notesMap[uuid] = content
+                    _uiState.value = NotesUIState(notes = notesMap, loading = false)
                 }
         }
     }
@@ -51,7 +69,7 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
                 notesRepository.unfavoriteNote(uuid)
             }
             // This will make the favorite state update more quickly.
-            fetchNotes()
+            fetchNote(uuid)
         }
     }
 
@@ -78,7 +96,7 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
 }
 
 data class NotesUIState(
-    val notes: List<PinApi.Object> = emptyList(),
+    val notes: Map<UUID, PinApi.Object> = emptyMap(),
     // The UUIDs in this set are the UUIDs of the content elements that are selected.
     val selectedNotes: Set<UUID> = emptySet(),
     val loading: Boolean = false,

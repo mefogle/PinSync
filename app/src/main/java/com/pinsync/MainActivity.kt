@@ -49,24 +49,35 @@ class MainActivity : ComponentActivity() {
                             viewModel(factory = ViewModelFactory(NotesRepositoryImpl(PinApi.pinApiService)))
                         //val notesContent by viewModel.getNotes().observeAsState()
                         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-                        uiState.notes?.let { content ->
-                                    //progressBar.visibility = View.GONE
-                                    Log.d("MainActivity", "size = $content.content.size")
-                                    LazyColumn {
-                                        items(content!!.size) { noteIndex ->
-                                            // Occasionally null values seems to creep through and crash.  Not sure why.
-                                            content!![noteIndex]?.let { note ->
-                                                NoteListItem (note.data as PinApi.NoteData,{},
-                                                    toggleFavorite = { viewModel.setFavorite(note.uuid,
-                                                        !note.favorite)},
-                                                    toggleSelection = {
-                                                        viewModel.toggleSelectedNote(note.uuid)
-                                                    },
-                                                    isSelected = uiState.selectedNotes.contains(note.uuid),
-                                                    isFavorite = note.favorite)
-                                            }
+                        if (uiState.error != null) {
+                            Toast.makeText(this, "Error: " + uiState.error, Toast.LENGTH_LONG)
+                                .show()
+                        } else if (!uiState.loading) {
+                            uiState.notes?.values.let { content ->
+                                //progressBar.visibility = View.GONE
+                                Log.d("MainActivity", "size = $content.content.size")
+                                LazyColumn {
+                                    items(content!!.size) { noteIndex ->
+                                        // Occasionally null values seems to creep through and crash.  Not sure why.
+                                        content!!.elementAt(noteIndex)?.let { note ->
+                                            NoteListItem(
+                                                note.data as PinApi.NoteData, {},
+                                                toggleFavorite = {
+                                                    viewModel.setFavorite(
+                                                        note.uuid,
+                                                        !note.favorite
+                                                    )
+                                                },
+                                                toggleSelection = {
+                                                    viewModel.toggleSelectedNote(note.uuid)
+                                                },
+                                                isSelected = uiState.selectedNotes.contains(note.uuid),
+                                                isFavorite = note.favorite
+                                            )
                                         }
+                                    }
                                 }
+                            }
                         }
                     }
                 }

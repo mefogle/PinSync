@@ -12,6 +12,9 @@ interface PinApiService {
     @GET("notes")
     suspend fun getNotes(@Query("page") page : Int = 0, @Query("size") size : Int = 20): PinApi.Content
 
+    @GET("memory/{uuid}")
+    suspend fun getMemory(@Path("uuid") uuid: UUID): PinApi.Object
+
     @POST("memory/{uuid}/favorite")
     suspend fun favorite(@Path("uuid") uuid: UUID) : Response<Unit>
 

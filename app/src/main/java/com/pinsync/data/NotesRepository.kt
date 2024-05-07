@@ -12,6 +12,8 @@ import java.util.UUID
 interface NotesRepository {
     fun getAllNotes(): Flow<PinApi.Content>
 
+    fun getNote(uuid: UUID): Flow<PinApi.Object>
+
     suspend fun favoriteNote(uuid: UUID) : Response<Unit>
 
     suspend fun unfavoriteNote(uuid: UUID) : Response<Unit>
