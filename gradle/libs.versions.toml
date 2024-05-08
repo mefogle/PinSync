@@ -14,6 +14,7 @@ ksp = "1.9.23-1.0.20"
 moshi-adapters = "1.10.0"
 retrofit = "2.11.0"
 lifecycleRuntimeCompose = "2.7.0"
+paging = "3.2.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,6 +43,9 @@ moshi-kotlin-codegen = { group = "com.squareup.moshi", name = "moshi-kotlin-code
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit"}
 retrofit-converter-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "retrofit"}
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
+androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref="paging"}
+androidx-paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref="paging"}
+androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref="paging"}
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

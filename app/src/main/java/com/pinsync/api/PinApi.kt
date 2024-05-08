@@ -197,7 +197,7 @@ object PinApi {
         .build()
 
     // The single instance of the API service.
-    val pinApiService = retrofit.create(PinApiService::class.java)
+    val pinApiService: PinApiService = retrofit.create(PinApiService::class.java)
 
     // If this value is non-null, we think we have a valid session, but it can
     // expire at any time.
