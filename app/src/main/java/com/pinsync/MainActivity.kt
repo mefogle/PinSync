@@ -16,6 +16,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.pinsync.api.PinApi
 import com.pinsync.data.NotesRepositoryImpl
 import com.pinsync.ui.AuthDialog
@@ -51,13 +53,16 @@ class MainActivity : ComponentActivity() {
                             Toast.makeText(this, "Error: " + uiState.error, Toast.LENGTH_LONG)
                                 .show()
                         } else if (!uiState.loading) {
+                            val items: LazyPagingItems<PinApi.Object> = viewModel.pagingDataFlow.collectAsLazyPagingItems()
                             uiState.notes?.values.let { content ->
                                 //progressBar.visibility = View.GONE
                                 Log.d("MainActivity", "size = $content.content.size")
                                 LazyColumn {
-                                    items(content!!.size) { noteIndex ->
+                                    //items(content!!.size) { noteIndex ->
+                                    items(items.itemCount) { noteIndex ->
                                         // Occasionally null values seems to creep through and crash.  Not sure why.
-                                        content.elementAt(noteIndex)?.let { note ->
+                                        //content.elementAt(noteIndex)?.let { note ->
+                                        items[noteIndex]?.let { note->
                                             NoteListItem(
                                                 note.data as PinApi.NoteData, {},
                                                 toggleFavorite = {

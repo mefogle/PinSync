@@ -18,6 +18,7 @@ class NotesRepositoryImpl (private val apiService: PinApiService) : NotesReposit
             pagingSourceFactory = { NotesPagingSource(apiService) }
         ).flow
     }
+
     override fun getNote(uuid: UUID): Flow<PinApi.Object> = flow { emit(apiService.getMemory(uuid)) }
 
     override suspend fun favoriteNote(uuid: UUID) = apiService.favorite(uuid)
