@@ -11,10 +11,10 @@ class NotesPagingSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, PinApi.Object> {
         val pageNumber = params.key ?: 0
         return try {
-            val response = pinApiService.getNotes(page = pageNumber)
+            val response = pinApiService.getNotes(page = pageNumber, size = params.loadSize)
             LoadResult.Page(
                 data = response.content,
-                prevKey = if (pageNumber == 0) null else pageNumber,
+                prevKey = if (pageNumber == 0) null else pageNumber - 1,
                 nextKey = if (response.last) null else pageNumber + 1
             )
         } catch (exception: Exception) {
@@ -22,8 +22,7 @@ class NotesPagingSource(
         }
     }
 
-
     override fun getRefreshKey(state: PagingState<Int, PinApi.Object>): Int {
-        return ((state.anchorPosition ?: 0) - state.config.initialLoadSize / 2).coerceAtLeast(0)
+        return ((state.anchorPosition ?: 0) - state.config.pageSize / 2).coerceAtLeast(0)
     }
 }

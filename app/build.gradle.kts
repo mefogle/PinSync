@@ -74,6 +74,8 @@ dependencies {
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.paging.runtime.ktx)
+    implementation(libs.androidx.room.common)
+    implementation(libs.androidx.room.paging)
     ksp(libs.moshi.kotlin.codegen)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

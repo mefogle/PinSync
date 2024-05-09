@@ -15,6 +15,7 @@ moshi-adapters = "1.10.0"
 retrofit = "2.11.0"
 lifecycleRuntimeCompose = "2.7.0"
 paging = "3.2.1"
+room = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -46,6 +47,8 @@ androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lif
 androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref="paging"}
 androidx-paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref="paging"}
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref="paging"}
+androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "room" }
+androidx-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room"}
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

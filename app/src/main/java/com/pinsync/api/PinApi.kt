@@ -2,6 +2,12 @@ package com.pinsync.api
 
 import android.util.Log
 import android.webkit.CookieManager
+import androidx.room.ColumnInfo
+import androidx.room.Embedded
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Ignore
+import androidx.room.PrimaryKey
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonClass
@@ -50,6 +56,7 @@ object PinApi {
     // for the other data types to extend from.
     abstract class ContentData(
         open val uuid: UUID,
+        open val parentId: UUID?,
         open val location: String?,
         open val latitude: String?,
         open val longitude: String?,
@@ -60,29 +67,40 @@ object PinApi {
 
     // The NoteData and Note objects, used for all notes stored in .center
     @JsonClass(generateAdapter = true)
+    @Entity(tableName = "note",
+        foreignKeys = [ForeignKey(entity = Object::class,
+        parentColumns = arrayOf("note_data_id"),
+        childColumns = arrayOf("parent_id"),
+        onDelete = ForeignKey.CASCADE)])
     data class NoteData(
-        override val uuid: UUID,
+        @PrimaryKey override val uuid: UUID,
+        @ColumnInfo(name = "parent_id") override val parentId: UUID?,
         override val location: String?,
         override val latitude: String?,
         override val longitude: String?,
         override val createdAt: Date,
         override val lastModifiedAt: Date,
         override val state: String,
-        val note: Note
+        @Embedded val note: Note
     ) :
-        ContentData(uuid, location, latitude, longitude, createdAt, lastModifiedAt, state)
+        ContentData(uuid, parentId, location, latitude, longitude, createdAt, lastModifiedAt, state)
 
-    data class Note(val uuid: UUID, var title: String, var text: String)
+    data class Note(
+        @PrimaryKey val uuid: UUID,
+        var title: String,
+        var text: String)
 
     // The Object object is used for wrapping other content types.
     @JsonClass(generateAdapter = true)
+    @Entity(tableName = "object")
     data class Object(
-        val uuid: UUID,
-        val data: ContentData,
+        @PrimaryKey val uuid: UUID,
+        @Ignore val data: ContentData,
         val userLastModified: Date,
         val userCreatedAt: Date,
         val originClientId: String,
-        val favorite: Boolean
+        val favorite: Boolean,
+        @ColumnInfo(name = "note_data_id") val noteDataId: UUID?
     )
 
     // Indicates the sorted/unsorted nature of the contents of a list

@@ -23,6 +23,7 @@ import com.pinsync.data.NotesRepositoryImpl
 import com.pinsync.ui.AuthDialog
 import com.pinsync.ui.components.NoteListItem
 import com.pinsync.ui.theme.PinSyncTheme
+import com.pinsync.viewmodel.NewNotesUIState
 import com.pinsync.viewmodel.NotesViewModel
 import com.pinsync.viewmodel.ViewModelFactory
 
@@ -48,38 +49,44 @@ class MainActivity : ComponentActivity() {
                         viewModel =
                             viewModel(factory = ViewModelFactory(NotesRepositoryImpl(PinApi.pinApiService)))
                         //val notesContent by viewModel.getNotes().observeAsState()
-                        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-                        if (uiState.error != null) {
-                            Toast.makeText(this, "Error: " + uiState.error, Toast.LENGTH_LONG)
-                                .show()
-                        } else if (!uiState.loading) {
-                            val items: LazyPagingItems<PinApi.Object> = viewModel.pagingDataFlow.collectAsLazyPagingItems()
-                            uiState.notes?.values.let { content ->
-                                //progressBar.visibility = View.GONE
-                                Log.d("MainActivity", "size = $content.content.size")
-                                LazyColumn {
-                                    //items(content!!.size) { noteIndex ->
-                                    items(items.itemCount) { noteIndex ->
-                                        // Occasionally null values seems to creep through and crash.  Not sure why.
-                                        //content.elementAt(noteIndex)?.let { note ->
-                                        items[noteIndex]?.let { note->
-                                            NoteListItem(
-                                                note.data as PinApi.NoteData, {},
-                                                toggleFavorite = {
-                                                    viewModel.setFavorite(
-                                                        note.uuid,
-                                                        !note.favorite
-                                                    )
-                                                },
-                                                toggleSelection = {
-                                                    viewModel.toggleSelectedNote(note.uuid)
-                                                },
-                                                isSelected = uiState.selectedNotes.contains(note.uuid),
-                                                isFavorite = note.favorite
-                                            )
+                        val uiState by viewModel.newUiState.collectAsStateWithLifecycle()
+                        when (uiState) {
+                            is NewNotesUIState.Loading -> {
+                                //progressBar.visibility = View.VISIBLE
+                            }
+                            is NewNotesUIState.Success -> {
+                                val items: LazyPagingItems<PinApi.Object> = viewModel.pagingDataFlow.collectAsLazyPagingItems()
+                                items.let { content ->
+                                    //progressBar.visibility = View.GONE
+                                    Log.d("MainActivity", "size = $content.content.size")
+                                    LazyColumn {
+                                        //items(content!!.size) { noteIndex ->
+                                        items(items.itemCount) { noteIndex ->
+                                            // Occasionally null values seems to creep through and crash.  Not sure why.
+                                            //content.elementAt(noteIndex)?.let { note ->
+                                            items[noteIndex]?.let { note->
+                                                NoteListItem(
+                                                    note.data as PinApi.NoteData, {},
+                                                    toggleFavorite = {
+                                                        viewModel.setFavorite(
+                                                            note.uuid,
+                                                            !note.favorite
+                                                        )
+                                                    },
+                                                    toggleSelection = {
+                                                        viewModel.toggleSelectedNote(note.uuid)
+                                                    },
+                                                    isSelected = uiState.selectedNotes.contains(note.uuid),
+                                                    isFavorite = note.favorite
+                                                )
+                                            }
                                         }
                                     }
                                 }
+                            }
+                            is NewNotesUIState.Error -> {
+                                Toast.makeText(this, "Error: " + (uiState as NewNotesUIState.Error).error, Toast.LENGTH_LONG)
+                                    .show()
                             }
                         }
                     }

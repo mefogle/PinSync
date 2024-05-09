@@ -12,7 +12,7 @@ import com.pinsync.data.NotesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Timer
@@ -25,10 +25,10 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
     private val _newUiState = MutableStateFlow<NewNotesUIState<PagingData<PinApi.Object>>> (NewNotesUIState.Loading)
     val uiState: StateFlow<NotesUIState> = _uiState
     private var currentPagingSource: NotesPagingSource? = null
-    //val newUiState: StateFlow<NewNotesUIState<PagingData<PinApi.Object>>> = _newUiState.asStateFlow()
+    val newUiState: StateFlow<NewNotesUIState<PagingData<PinApi.Object>>> = _newUiState.asStateFlow()
     //val pagingDataFlow: Flow<PagingData<PinApi.Object>> = notesRepository.getNotes().cachedIn(viewModelScope)
     val pager = Pager(
-        config = PagingConfig(pageSize = 10),
+        config = PagingConfig(pageSize = 5, initialLoadSize = 10),
         pagingSourceFactory = { NotesPagingSource(PinApi.pinApiService).also {currentPagingSource = it} })
     val pagingDataFlow : Flow<PagingData<PinApi.Object>> = pager.flow.cachedIn(viewModelScope)
 
@@ -37,7 +37,7 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
     init {
         // Initialize the UI state to loading
         _uiState.value = NotesUIState(loading = true)
-        fetchNotes()
+        //fetchNotes()
         viewModelScope.launch {
             pagingDataFlow.collectLatest { pagingData ->
                 _newUiState.value = NewNotesUIState.Success(pagingData)
@@ -46,21 +46,21 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
         startPeriodicTask()
     }
 
-    private fun fetchNotes() {
-        viewModelScope.launch {
-            notesRepository.getAllNotes()
-                .catch { e ->
-                    _uiState.value = NotesUIState(error = e.message)
-                }
-                .collect { content ->
-                    val noteMap =  mutableMapOf<UUID, PinApi.Object>()
-                    for (note in content.content) {
-                        noteMap[note.uuid] = note
-                    }
-                    _uiState.value = NotesUIState(notes = noteMap, loading = false)
-                }
-        }
-    }
+//    private fun fetchNotes() {
+//        viewModelScope.launch {
+//            notesRepository.getAllNotes()
+//                .catch { e ->
+//                    _uiState.value = NotesUIState(error = e.message)
+//                }
+//                .collect { content ->
+//                    val noteMap =  mutableMapOf<UUID, PinApi.Object>()
+//                    for (note in content.content) {
+//                        noteMap[note.uuid] = note
+//                    }
+//                    _uiState.value = NotesUIState(notes = noteMap, loading = false)
+//                }
+//        }
+//    }
 
 //    private fun newFetcnNotes() {
 //        viewModelScope.launch {
@@ -115,7 +115,7 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
         timer = Timer()
         timer?.schedule(object : TimerTask() {
             override fun run() {
-                fetchNotes()
+                //fetchNotes()
                 currentPagingSource?.invalidate()
             }
         }, 0, 5000) // Schedule the task to run every 5 seconds
@@ -136,7 +136,7 @@ data class NotesUIState(
 
 sealed class NewNotesUIState<out T> {
     val selectedNotes: Set<UUID> = emptySet()
-    object Loading : NewNotesUIState<Nothing>()
+    data object Loading : NewNotesUIState<Nothing>()
     data class Success<T>(val data: T) :NewNotesUIState<T>()
-    //data class Error(val error: Throwable) :NewNotesUIState<Nothing>()
+    data class Error(val error: Throwable) :NewNotesUIState<Nothing>()
 }
