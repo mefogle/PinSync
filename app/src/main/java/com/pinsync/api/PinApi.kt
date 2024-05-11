@@ -2,12 +2,9 @@ package com.pinsync.api
 
 import android.util.Log
 import android.webkit.CookieManager
-import androidx.room.ColumnInfo
-import androidx.room.Embedded
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Ignore
-import androidx.room.PrimaryKey
+import com.pinsync.data.ContentData
+import com.pinsync.data.ContentType
+import com.pinsync.data.Note
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonClass
@@ -52,56 +49,31 @@ object PinApi {
     @JsonClass(generateAdapter = true)
     data class SessionInfo(val user: UserInfo, val accessToken: String)
 
-    // Base class for Note, Photo & Video... There should be another abstract class above this
-    // for the other data types to extend from.
-    abstract class ContentData(
-        open val uuid: UUID,
-        open val parentId: UUID?,
-        open val location: String?,
-        open val latitude: String?,
-        open val longitude: String?,
-        open val createdAt: Date,
-        open val lastModifiedAt: Date,
-        open val state: String
-    )
-
-    // The NoteData and Note objects, used for all notes stored in .center
+    // The NoteData objects, used for all notes stored in .center
     @JsonClass(generateAdapter = true)
-    @Entity(tableName = "note",
-        foreignKeys = [ForeignKey(entity = Object::class,
-        parentColumns = arrayOf("note_data_id"),
-        childColumns = arrayOf("parent_id"),
-        onDelete = ForeignKey.CASCADE)])
     data class NoteData(
-        @PrimaryKey override val uuid: UUID,
-        @ColumnInfo(name = "parent_id") override val parentId: UUID?,
+        override val uuid: UUID,
         override val location: String?,
         override val latitude: String?,
         override val longitude: String?,
         override val createdAt: Date,
         override val lastModifiedAt: Date,
         override val state: String,
-        @Embedded val note: Note
+        val note: Note
     ) :
-        ContentData(uuid, parentId, location, latitude, longitude, createdAt, lastModifiedAt, state)
-
-    data class Note(
-        @PrimaryKey val uuid: UUID,
-        var title: String,
-        var text: String)
+        ContentData(uuid, location, latitude, longitude, createdAt, lastModifiedAt, state, ContentType.GENERIC_NOTE)
 
     // The Object object is used for wrapping other content types.
     @JsonClass(generateAdapter = true)
-    @Entity(tableName = "object")
     data class Object(
-        @PrimaryKey val uuid: UUID,
-        @Ignore val data: ContentData,
+        val uuid: UUID,
+        val data: ContentData,
         val userLastModified: Date,
         val userCreatedAt: Date,
         val originClientId: String,
-        val favorite: Boolean,
-        @ColumnInfo(name = "note_data_id") val noteDataId: UUID?
+        val favorite: Boolean
     )
+
 
     // Indicates the sorted/unsorted nature of the contents of a list
     @JsonClass(generateAdapter = true)
@@ -202,7 +174,7 @@ object PinApi {
         .add(UUIDAdapter())
         .add(
             PolymorphicJsonAdapterFactory.of(ContentData::class.java, "type")
-                .withSubtype(NoteData::class.java, "GENERIC_NOTE")
+                .withSubtype(NoteData::class.java, ContentType.GENERIC_NOTE.name)
         )
         .add(KotlinJsonAdapterFactory())
         .add(Date::class.java, Rfc3339DateJsonAdapter()).build()

@@ -1,8 +1,10 @@
 package com.pinsync.data
 
+import androidx.lifecycle.LiveData
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.pinsync.PinSyncApp
 import com.pinsync.api.PinApi
 import com.pinsync.api.PinApiService
 import kotlinx.coroutines.flow.Flow
@@ -10,6 +12,7 @@ import kotlinx.coroutines.flow.flow
 import java.util.UUID
 
 class NotesRepositoryImpl (private val apiService: PinApiService) : NotesRepository {
+    private val objectDao = PinSyncApp.db?.objectDao()
     override fun getAllNotes() = flow { emit(apiService.getNotes()) }
 
     override fun getNotes(): Flow<PagingData<PinApi.Object>> {
@@ -20,6 +23,38 @@ class NotesRepositoryImpl (private val apiService: PinApiService) : NotesReposit
     }
 
     override fun getNote(uuid: UUID): Flow<PinApi.Object> = flow { emit(apiService.getMemory(uuid)) }
+    override fun getObjectsWithNotes(): LiveData<List<ObjectWithNote>> {
+        return objectDao!!.getObjectsWithNotes()
+    }
+
+    override suspend fun refreshNotes() {
+        val allNotes = mutableListOf<PinApi.Object>()
+        var moreData = true
+        var nextPage = 0
+        while (moreData) {
+            val container = apiService.getNotes(nextPage)
+            val objectDtos = container.content
+            allNotes.addAll(objectDtos)
+            moreData = !container.last
+            nextPage++
+        }
+
+        val objectEntities : List<Object> = allNotes.map { dto -> mapObjectDtoToEntity (dto) }
+        val validUUIDs = objectEntities.map { it.uuid }
+
+        if (objectEntities.isNotEmpty())
+        {
+            objectDao?.insertAllWithNotes(objectEntities)
+            objectDao?.removeDeletedObjects(validUUIDs)
+        }
+        else {
+            // The database is empty... or we think it is.
+            objectDao?.removeAll()
+        }
+
+
+
+    }
 
     override suspend fun favoriteNote(uuid: UUID) = apiService.favorite(uuid)
     override suspend fun unfavoriteNote(uuid: UUID) = apiService.unfavorite(uuid)

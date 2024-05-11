@@ -1,5 +1,6 @@
 package com.pinsync.viewmodel
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -9,6 +10,8 @@ import androidx.paging.cachedIn
 import com.pinsync.api.PinApi
 import com.pinsync.data.NotesPagingSource
 import com.pinsync.data.NotesRepository
+import com.pinsync.data.ObjectWithNote
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +26,8 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
 
     private val _uiState = MutableStateFlow(NotesUIState(loading = true))
     private val _newUiState = MutableStateFlow<NewNotesUIState<PagingData<PinApi.Object>>> (NewNotesUIState.Loading)
+    private var _allNotes : LiveData<List<ObjectWithNote>>
+    var allNotes : LiveData<List<ObjectWithNote>>
     val uiState: StateFlow<NotesUIState> = _uiState
     private var currentPagingSource: NotesPagingSource? = null
     val newUiState: StateFlow<NewNotesUIState<PagingData<PinApi.Object>>> = _newUiState.asStateFlow()
@@ -37,6 +42,8 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
     init {
         // Initialize the UI state to loading
         _uiState.value = NotesUIState(loading = true)
+        _allNotes = notesRepository.getObjectsWithNotes()
+        allNotes = _allNotes
         //fetchNotes()
         viewModelScope.launch {
             pagingDataFlow.collectLatest { pagingData ->
@@ -45,50 +52,6 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
         }
         startPeriodicTask()
     }
-
-//    private fun fetchNotes() {
-//        viewModelScope.launch {
-//            notesRepository.getAllNotes()
-//                .catch { e ->
-//                    _uiState.value = NotesUIState(error = e.message)
-//                }
-//                .collect { content ->
-//                    val noteMap =  mutableMapOf<UUID, PinApi.Object>()
-//                    for (note in content.content) {
-//                        noteMap[note.uuid] = note
-//                    }
-//                    _uiState.value = NotesUIState(notes = noteMap, loading = false)
-//                }
-//        }
-//    }
-
-//    private fun newFetcnNotes() {
-//        viewModelScope.launch {
-//            pagingDataFlow.onEach { pagingData ->
-//                pagingData.loadState.refresh.let { loadState ->
-//                    when (loadState) {
-//                        is LoadState.Loading -> _newUiState.value = NewNotesUIState.Loading
-//                        is LoadState.Error -> _newUiState.value = NewNotesUIState.Error(loadState.error)
-//                        else -> _newUiState.value = NewNotesUIState.Success(pagingData)
-//                    }
-//                }
-//            }.launchIn(this)
-//        }
-//    }
-
-//    private fun fetchNote(uuid: UUID) {
-//        viewModelScope.launch {
-//            notesRepository.getNote(uuid)
-//                .catch { e ->
-//                    _uiState.value = NotesUIState(error = e.message)
-//                }
-//                .collect { content ->
-//                    val notesMap = uiState.value.notes.toMutableMap()
-//                    notesMap[uuid] = content
-//                    _uiState.value = NotesUIState(notes = notesMap, loading = false)
-//                }
-//        }
-//    }
 
     // Note that the UUID here is the UUID of the content envelope, not the UUID of the NoteData.
     fun setFavorite (uuid: UUID, isFavorite: Boolean){
@@ -115,7 +78,7 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
         timer = Timer()
         timer?.schedule(object : TimerTask() {
             override fun run() {
-                //fetchNotes()
+                viewModelScope.launch (Dispatchers.IO) {notesRepository.refreshNotes()}
                 currentPagingSource?.invalidate()
             }
         }, 0, 5000) // Schedule the task to run every 5 seconds

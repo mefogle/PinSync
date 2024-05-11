@@ -16,7 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.pinsync.api.PinApi
 import com.pinsync.data.NotesRepositoryImpl
@@ -55,35 +54,44 @@ class MainActivity : ComponentActivity() {
                                 //progressBar.visibility = View.VISIBLE
                             }
                             is NewNotesUIState.Success -> {
-                                val items: LazyPagingItems<PinApi.Object> = viewModel.pagingDataFlow.collectAsLazyPagingItems()
-                                items.let { content ->
+                                viewModel.allNotes.observe(this) {
+                                    Log.d(
+                                        "MainActivity",
+                                        "hasObservers = ${viewModel.allNotes.hasObservers()}"
+                                    )
+                                    Log.d("MainActivity", "size = ${it.size}")
+                                }
+                                val newItems = viewModel.allNotes
+                                viewModel.pagingDataFlow.collectAsLazyPagingItems()
+                                newItems.let { content ->
                                     //progressBar.visibility = View.GONE
-                                    Log.d("MainActivity", "size = $content.content.size")
+                                    Log.d("MainActivity", "size = ${content.value}")
                                     LazyColumn {
                                         //items(content!!.size) { noteIndex ->
-                                        items(items.itemCount) { noteIndex ->
+                                        content.value?.let {it ->
+                                        items(newItems.value!!.size) { noteIndex ->
                                             // Occasionally null values seems to creep through and crash.  Not sure why.
                                             //content.elementAt(noteIndex)?.let { note ->
-                                            items[noteIndex]?.let { note->
+                                            it[noteIndex]?.let { note->
                                                 NoteListItem(
-                                                    note.data as PinApi.NoteData, {},
+                                                    note.note, {},
                                                     toggleFavorite = {
                                                         viewModel.setFavorite(
-                                                            note.uuid,
-                                                            !note.favorite
+                                                            note.note.uuid,
+                                                            !note.container.favorite
                                                         )
                                                     },
                                                     toggleSelection = {
-                                                        viewModel.toggleSelectedNote(note.uuid)
+                                                        viewModel.toggleSelectedNote(note.note.uuid)
                                                     },
-                                                    isSelected = uiState.selectedNotes.contains(note.uuid),
-                                                    isFavorite = note.favorite
+                                                    isSelected = uiState.selectedNotes.contains(note.note.uuid),
+                                                    isFavorite = note.container.favorite
                                                 )
                                             }
                                         }
                                     }
                                 }
-                            }
+                            }}
                             is NewNotesUIState.Error -> {
                                 Toast.makeText(this, "Error: " + (uiState as NewNotesUIState.Error).error, Toast.LENGTH_LONG)
                                     .show()

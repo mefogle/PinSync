@@ -38,15 +38,14 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.pinsync.R
-import com.pinsync.api.PinApi
-import java.util.UUID
+import com.pinsync.data.NoteData
 
 @OptIn(
     ExperimentalFoundationApi::class
 )
 @Composable
 fun NoteListItem(
-    noteData: PinApi.NoteData,
+    noteData: NoteData,
     navigateToDetail: () -> Unit,
     toggleSelection: () -> Unit,
     toggleFavorite: () -> Unit,
