@@ -147,9 +147,6 @@ abstract class PinDatabase: RoomDatabase() {
         @Query("SELECT * FROM object WHERE uuid IN (:objectIds)")
         fun loadAllByIds(objectIds: IntArray): List<Object>
 
-        @Insert
-        fun insert(vararg objectFields : Object)
-
         @Insert(onConflict = OnConflictStrategy.REPLACE)
         fun insertAll(objects: List<Object>)
 
@@ -160,7 +157,7 @@ abstract class PinDatabase: RoomDatabase() {
         fun delete(objectRef: Object)
 
         @Transaction
-        @Query("SELECT * FROM Object ORDER BY userCreatedAt DESC")
+        @Query("SELECT * FROM Object ORDER BY favorite DESC, userCreatedAt DESC")
         fun getObjectsWithNotes (): LiveData<List<ObjectWithNote>>
 
         @Transaction
@@ -176,6 +173,14 @@ abstract class PinDatabase: RoomDatabase() {
             insertAll(objects)
             val noteObjects = objects.filter { it.contentType == ContentType.GENERIC_NOTE }
             insertNotes(noteObjects.map { noteObject -> noteObject.contentData as NoteData })
+        }
+
+        @Transaction
+        fun insertWithNote(objectFields : Object) {
+            if (objectFields.contentType == ContentType.GENERIC_NOTE) {
+                insertAll(listOf(objectFields))
+                insertNotes(listOf(objectFields.contentData as NoteData))
+            }
         }
     }
 }

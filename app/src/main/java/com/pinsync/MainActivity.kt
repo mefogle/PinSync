@@ -10,15 +10,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.pinsync.api.PinApi
 import com.pinsync.data.NotesRepositoryImpl
+import com.pinsync.data.ObjectWithNote
 import com.pinsync.ui.AuthDialog
 import com.pinsync.ui.components.NoteListItem
 import com.pinsync.ui.theme.PinSyncTheme
@@ -54,22 +56,23 @@ class MainActivity : ComponentActivity() {
                                 //progressBar.visibility = View.VISIBLE
                             }
                             is NewNotesUIState.Success -> {
-                                viewModel.allNotes.observe(this) {
-                                    Log.d(
-                                        "MainActivity",
-                                        "hasObservers = ${viewModel.allNotes.hasObservers()}"
-                                    )
-                                    Log.d("MainActivity", "size = ${it.size}")
-                                }
-                                val newItems = viewModel.allNotes
-                                viewModel.pagingDataFlow.collectAsLazyPagingItems()
-                                newItems.let { content ->
+
+                                val newItems = viewModel.allNotes.observeAsState().value
+
+                                Log.d(
+                                    "MainActivity",
+                                    "hasObservers = ${viewModel.allNotes.hasObservers()}"
+                                )
+                                Log.d("MainActivity", "size = ${(uiState as NewNotesUIState.Success<LiveData<List<ObjectWithNote>>>).data.value?.size}")
+
+                                //viewModel.pagingDataFlow.collectAsLazyPagingItems()
+                                newItems?.let { content ->
                                     //progressBar.visibility = View.GONE
-                                    Log.d("MainActivity", "size = ${content.value}")
+                                    Log.d("MainActivity", "size = ${content.size}")
                                     LazyColumn {
                                         //items(content!!.size) { noteIndex ->
-                                        content.value?.let {it ->
-                                        items(newItems.value!!.size) { noteIndex ->
+                                        content.let {it ->
+                                        items(newItems.size) { noteIndex ->
                                             // Occasionally null values seems to creep through and crash.  Not sure why.
                                             //content.elementAt(noteIndex)?.let { note ->
                                             it[noteIndex]?.let { note->
@@ -77,7 +80,7 @@ class MainActivity : ComponentActivity() {
                                                     note.note, {},
                                                     toggleFavorite = {
                                                         viewModel.setFavorite(
-                                                            note.note.uuid,
+                                                            note.container.uuid,
                                                             !note.container.favorite
                                                         )
                                                     },
@@ -89,9 +92,9 @@ class MainActivity : ComponentActivity() {
                                                 )
                                             }
                                         }
-                                    }
+                                    }}
                                 }
-                            }}
+                            }
                             is NewNotesUIState.Error -> {
                                 Toast.makeText(this, "Error: " + (uiState as NewNotesUIState.Error).error, Toast.LENGTH_LONG)
                                     .show()

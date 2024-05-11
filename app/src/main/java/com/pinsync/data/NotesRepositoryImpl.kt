@@ -1,5 +1,6 @@
 package com.pinsync.data
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -27,6 +28,11 @@ class NotesRepositoryImpl (private val apiService: PinApiService) : NotesReposit
         return objectDao!!.getObjectsWithNotes()
     }
 
+    override suspend fun refreshNote(uuid: UUID) {
+        val container = apiService.getMemory(uuid)
+        val objectEntity = mapObjectDtoToEntity(container)
+        objectDao?.insertWithNote(objectEntity)
+    }
     override suspend fun refreshNotes() {
         val allNotes = mutableListOf<PinApi.Object>()
         var moreData = true
@@ -39,21 +45,23 @@ class NotesRepositoryImpl (private val apiService: PinApiService) : NotesReposit
             nextPage++
         }
 
-        val objectEntities : List<Object> = allNotes.map { dto -> mapObjectDtoToEntity (dto) }
-        val validUUIDs = objectEntities.map { it.uuid }
+        // For some reason, a null dto shows up every once in a while.  This is a workaround.
 
-        if (objectEntities.isNotEmpty())
-        {
-            objectDao?.insertAllWithNotes(objectEntities)
-            objectDao?.removeDeletedObjects(validUUIDs)
+        try {
+            val objectEntities: List<Object> = allNotes.map { dto -> mapObjectDtoToEntity(dto) }
+            val validUUIDs = objectEntities.map { it.uuid }
+
+            if (objectEntities.isNotEmpty()) {
+                objectDao?.insertAllWithNotes(objectEntities)
+                objectDao?.removeDeletedObjects(validUUIDs)
+            } else {
+                // The database is empty... or we think it is.
+                objectDao?.removeAll()
+            }
         }
-        else {
-            // The database is empty... or we think it is.
-            objectDao?.removeAll()
+        catch (e: Exception) {
+            Log.e("NotesRepositoryImpl", "Unexpected error refreshNotes: ", e)
         }
-
-
-
     }
 
     override suspend fun favoriteNote(uuid: UUID) = apiService.favorite(uuid)

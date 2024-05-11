@@ -22,6 +22,8 @@ interface NotesRepository {
 
     suspend fun refreshNotes()
 
+    suspend fun refreshNote(uuid: UUID)
+
     suspend fun favoriteNote(uuid: UUID) : Response<Unit>
 
     suspend fun unfavoriteNote(uuid: UUID) : Response<Unit>
