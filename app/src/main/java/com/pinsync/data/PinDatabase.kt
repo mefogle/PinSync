@@ -161,6 +161,10 @@ abstract class PinDatabase: RoomDatabase() {
         fun getObjectsWithNotes (): LiveData<List<ObjectWithNote>>
 
         @Transaction
+        @Query("SELECT * FROM Object WHERE uuid = :uuid")
+        fun getObjectWithNote (uuid: UUID): LiveData<ObjectWithNote>
+
+        @Transaction
         @Query("DELETE FROM object WHERE uuid NOT IN (:idsToKeep)")
         suspend fun removeDeletedObjects(idsToKeep: List<UUID>)
 

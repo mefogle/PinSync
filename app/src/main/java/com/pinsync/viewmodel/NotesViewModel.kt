@@ -1,6 +1,7 @@
 package com.pinsync.viewmodel
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pinsync.data.NotesRepository
@@ -14,23 +15,39 @@ import java.util.Timer
 import java.util.TimerTask
 import java.util.UUID
 
+typealias ObjectsWithNotesLiveData = LiveData<List<ObjectWithNote>>
+typealias ObjectWithNoteLiveData = LiveData<ObjectWithNote>
+
 class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<NotesUIState<LiveData<List<ObjectWithNote>>>> (NotesUIState.Loading)
-    private var _allNotes : LiveData<List<ObjectWithNote>>
-    var allNotes : LiveData<List<ObjectWithNote>>
-    val uiState: StateFlow<NotesUIState<LiveData<List<ObjectWithNote>>>> = _uiState.asStateFlow()
+    private val _listUiState = MutableStateFlow<NotesUIState<ObjectsWithNotesLiveData>> (NotesUIState.Loading)
+    val listUiState: StateFlow<NotesUIState<ObjectsWithNotesLiveData>> = _listUiState.asStateFlow()
+    private var _allNotes : ObjectsWithNotesLiveData
+    var allNotes : ObjectsWithNotesLiveData
+
+    private val _detailUiState = MutableStateFlow<NoteUIState<ObjectWithNoteLiveData>> (NoteUIState.Loading)
+    val detailUiState: StateFlow<NoteUIState<ObjectWithNoteLiveData>> = _detailUiState.asStateFlow()
+    private var _selectedNote : ObjectWithNoteLiveData = MutableLiveData()
+//    var selectedNote : ObjectWithNoteLiveData = _selectedNote
 
     private var timer: Timer? = null
 
+
+
+    fun selectNote(note: ObjectWithNote) {
+        _selectedNote = notesRepository.getNote(note.container.uuid)
+        viewModelScope.launch {
+            _detailUiState.value = NoteUIState.Success(_selectedNote)
+        }
+    }
+
     init {
         // Initialize the UI state to loading
-        _uiState.value = NotesUIState.Loading
+        _listUiState.value = NotesUIState.Loading
         _allNotes = notesRepository.getObjectsWithNotes()
         allNotes = _allNotes
-        //fetchNotes()
         viewModelScope.launch {
-            _uiState.value = NotesUIState.Success(emptySet(), allNotes)
+            _listUiState.value = NotesUIState.Success(emptySet(), false, allNotes)
         }
         startPeriodicTask()
     }
@@ -50,10 +67,10 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
     }
 
     fun toggleSelectedNote(noteId: UUID) {
-        val currentSelection = uiState.value.selectedNotes
+        val currentSelection = listUiState.value.selectedNotes
         val newSelection = if (currentSelection.contains(noteId))
             currentSelection.minus(noteId) else currentSelection.plus(noteId)
-        _uiState.value = NotesUIState.Success(newSelection, allNotes)
+        _listUiState.value = NotesUIState.Success(newSelection, false, allNotes)
     }
 
     private fun startPeriodicTask() {
@@ -72,7 +89,14 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
 
 sealed class NotesUIState<out T> {
     open val selectedNotes: Set<UUID> = emptySet()
+    open val isDetailOnlyOpen: Boolean = false
     data object Loading: NotesUIState<Nothing>()
-    data class Success<T>(override val selectedNotes : Set<UUID>, val data: T): NotesUIState<T>()
+    data class Success<T>(override val selectedNotes : Set<UUID>, override val isDetailOnlyOpen: Boolean, val data: T): NotesUIState<T>()
     data class Error(val error: Throwable): NotesUIState<Nothing>()
+}
+
+sealed class NoteUIState<out T> {
+    data object Loading: NoteUIState<Nothing>()
+    data class Success<T>(val data: T): NoteUIState<T>()
+//    data class Error(val error: Throwable): NoteUIState<Nothing>()
 }

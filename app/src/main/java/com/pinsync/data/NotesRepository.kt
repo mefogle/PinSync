@@ -13,7 +13,7 @@ import java.util.UUID
 interface NotesRepository {
     fun getAllNotes(): Flow<PinApi.Content>
 
-    fun getNote(uuid: UUID): Flow<PinApi.Object>
+    fun getNote(uuid: UUID): LiveData<ObjectWithNote>
 
     fun getObjectsWithNotes () : LiveData<List<ObjectWithNote>>
 

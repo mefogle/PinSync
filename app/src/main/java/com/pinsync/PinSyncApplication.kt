@@ -5,11 +5,11 @@ import android.content.Context
 import androidx.room.Room
 import com.pinsync.data.PinDatabase
 
-class PinSyncApp : Application() {
+class PinSyncApplication : Application() {
 
     companion object {
         var db: PinDatabase? = null
-        private var instance: PinSyncApp? = null
+        private var instance: PinSyncApplication? = null
 
         fun applicationContext(): Context = instance!!.applicationContext
     }

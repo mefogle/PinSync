@@ -2,17 +2,18 @@ package com.pinsync.data
 
 import android.util.Log
 import androidx.lifecycle.LiveData
-import com.pinsync.PinSyncApp
+import com.pinsync.PinSyncApplication
 import com.pinsync.api.PinApi
 import com.pinsync.api.PinApiService
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.util.UUID
 
 class NotesRepositoryImpl (private val apiService: PinApiService) : NotesRepository {
-    private val objectDao = PinSyncApp.db?.objectDao()
+    private val objectDao = PinSyncApplication.db?.objectDao()
     override fun getAllNotes() = flow { emit(apiService.getNotes()) }
-    override fun getNote(uuid: UUID): Flow<PinApi.Object> = flow { emit(apiService.getMemory(uuid)) }
+    override fun getNote(uuid: UUID): LiveData<ObjectWithNote> {
+        return objectDao!!.getObjectWithNote(uuid)
+    }
     override fun getObjectsWithNotes(): LiveData<List<ObjectWithNote>> {
         return objectDao!!.getObjectsWithNotes()
     }

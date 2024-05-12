@@ -2,7 +2,7 @@ package com.pinsync.api
 
 import android.util.Log
 import android.webkit.CookieManager
-import com.pinsync.PinSyncApp
+import com.pinsync.PinSyncApplication
 import com.pinsync.data.ContentData
 import com.pinsync.data.ContentType
 import com.pinsync.data.Note
@@ -37,7 +37,7 @@ class APIError(message: String) : Exception(message)
 object PinApi {
 
     val cacheSize = 10L * 1024L * 1024L // 10 MiB
-    val cache = Cache(File(PinSyncApp.applicationContext().cacheDir, "http-cache"), cacheSize)
+    val cache = Cache(File(PinSyncApplication.applicationContext().cacheDir, "http-cache"), cacheSize)
 
     /// The UserInfo object returned as part of the session info.
     @JsonClass(generateAdapter = true)
