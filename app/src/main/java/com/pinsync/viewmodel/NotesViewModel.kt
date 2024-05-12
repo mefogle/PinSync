@@ -16,21 +16,21 @@ import java.util.UUID
 
 class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel() {
 
-    private val _newUiState = MutableStateFlow<NewNotesUIState<LiveData<List<ObjectWithNote>>>> (NewNotesUIState.Loading)
+    private val _uiState = MutableStateFlow<NotesUIState<LiveData<List<ObjectWithNote>>>> (NotesUIState.Loading)
     private var _allNotes : LiveData<List<ObjectWithNote>>
     var allNotes : LiveData<List<ObjectWithNote>>
-    val newUiState: StateFlow<NewNotesUIState<LiveData<List<ObjectWithNote>>>> = _newUiState.asStateFlow()
+    val uiState: StateFlow<NotesUIState<LiveData<List<ObjectWithNote>>>> = _uiState.asStateFlow()
 
     private var timer: Timer? = null
 
     init {
         // Initialize the UI state to loading
-        _newUiState.value = NewNotesUIState.Loading
+        _uiState.value = NotesUIState.Loading
         _allNotes = notesRepository.getObjectsWithNotes()
         allNotes = _allNotes
         //fetchNotes()
         viewModelScope.launch {
-            _newUiState.value = NewNotesUIState.Success(allNotes)
+            _uiState.value = NotesUIState.Success(emptySet(), allNotes)
         }
         startPeriodicTask()
     }
@@ -50,9 +50,10 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
     }
 
     fun toggleSelectedNote(noteId: UUID) {
-        val currentSelection = newUiState.value.selectedNotes
-        _newUiState.value.selectedNotes = if (currentSelection.contains(noteId))
+        val currentSelection = uiState.value.selectedNotes
+        val newSelection = if (currentSelection.contains(noteId))
             currentSelection.minus(noteId) else currentSelection.plus(noteId)
+        _uiState.value = NotesUIState.Success(newSelection, allNotes)
     }
 
     private fun startPeriodicTask() {
@@ -69,10 +70,9 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
     }
 }
 
-sealed class NewNotesUIState<out T> {
-    var selectedNotes: Set<UUID> = emptySet()
-    data object Loading: NewNotesUIState<Nothing>()
-
-    data class Success<T>(val data: T): NewNotesUIState<T>()
-    data class Error(val error: Throwable): NewNotesUIState<Nothing>()
+sealed class NotesUIState<out T> {
+    open val selectedNotes: Set<UUID> = emptySet()
+    data object Loading: NotesUIState<Nothing>()
+    data class Success<T>(override val selectedNotes : Set<UUID>, val data: T): NotesUIState<T>()
+    data class Error(val error: Throwable): NotesUIState<Nothing>()
 }

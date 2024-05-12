@@ -24,7 +24,7 @@ import com.pinsync.data.ObjectWithNote
 import com.pinsync.ui.AuthDialog
 import com.pinsync.ui.components.NoteListItem
 import com.pinsync.ui.theme.PinSyncTheme
-import com.pinsync.viewmodel.NewNotesUIState
+import com.pinsync.viewmodel.NotesUIState
 import com.pinsync.viewmodel.NotesViewModel
 import com.pinsync.viewmodel.ViewModelFactory
 
@@ -32,7 +32,6 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var viewModel: NotesViewModel
 
-    @Suppress("UNNECESSARY_SAFE_CALL") // Needed for the null Data check down below.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -49,53 +48,49 @@ class MainActivity : ComponentActivity() {
                     } else {
                         viewModel =
                             viewModel(factory = ViewModelFactory(NotesRepositoryImpl(PinApi.pinApiService)))
-                        //val notesContent by viewModel.getNotes().observeAsState()
-                        val uiState by viewModel.newUiState.collectAsStateWithLifecycle()
+                        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                         when (uiState) {
-                            is NewNotesUIState.Loading -> {
+                            is NotesUIState.Loading -> {
                                 //progressBar.visibility = View.VISIBLE
                             }
-                            is NewNotesUIState.Success -> {
-
-                                val newItems = viewModel.allNotes.observeAsState().value
-
-                                Log.d(
-                                    "MainActivity",
-                                    "hasObservers = ${viewModel.allNotes.hasObservers()}"
-                                )
-                                Log.d("MainActivity", "size = ${(uiState as NewNotesUIState.Success<LiveData<List<ObjectWithNote>>>).data.value?.size}")
+                            is NotesUIState.Success -> {
+                                val newItems = (uiState as NotesUIState.Success<LiveData<List<ObjectWithNote>>>).data.observeAsState().value
 
                                 newItems?.let { content ->
-                                    //progressBar.visibility = View.GONE
                                     Log.d("MainActivity", "size = ${content.size}")
                                     LazyColumn {
-                                        //items(content!!.size) { noteIndex ->
-                                        content.let {it ->
-                                        items(newItems.size) { noteIndex ->
-                                            // Occasionally null values seems to creep through and crash.  Not sure why.
-                                            //content.elementAt(noteIndex)?.let { note ->
-                                            it[noteIndex]?.let { note->
-                                                NoteListItem(
-                                                    note.note, {},
-                                                    toggleFavorite = {
-                                                        viewModel.setFavorite(
-                                                            note.container.uuid,
-                                                            !note.container.favorite
-                                                        )
-                                                    },
-                                                    toggleSelection = {
-                                                        viewModel.toggleSelectedNote(note.note.uuid)
-                                                    },
-                                                    isSelected = uiState.selectedNotes.contains(note.note.uuid),
-                                                    isFavorite = note.container.favorite
-                                                )
+                                        content.let { it ->
+                                            items(newItems.size) { noteIndex ->
+                                                it[noteIndex].let { note ->
+                                                    NoteListItem(
+                                                        note.note, {},
+                                                        toggleFavorite = {
+                                                            viewModel.setFavorite(
+                                                                note.container.uuid,
+                                                                !note.container.favorite
+                                                            )
+                                                        },
+                                                        toggleSelection = {
+                                                            viewModel.toggleSelectedNote(note.note.uuid)
+                                                        },
+                                                        isSelected = uiState.selectedNotes.contains(
+                                                            note.note.uuid
+                                                        ),
+                                                        isFavorite = note.container.favorite
+                                                    )
+                                                }
                                             }
                                         }
-                                    }}
+                                    }
                                 }
                             }
-                            is NewNotesUIState.Error -> {
-                                Toast.makeText(this, "Error: " + (uiState as NewNotesUIState.Error).error, Toast.LENGTH_LONG)
+
+                            is NotesUIState.Error -> {
+                                Toast.makeText(
+                                    this,
+                                    "Error: " + (uiState as NotesUIState.Error).error,
+                                    Toast.LENGTH_LONG
+                                )
                                     .show()
                             }
                         }
