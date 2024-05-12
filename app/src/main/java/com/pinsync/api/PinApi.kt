@@ -2,6 +2,7 @@ package com.pinsync.api
 
 import android.util.Log
 import android.webkit.CookieManager
+import com.pinsync.PinSyncApp
 import com.pinsync.data.ContentData
 import com.pinsync.data.ContentType
 import com.pinsync.data.Note
@@ -16,6 +17,7 @@ import com.squareup.moshi.ToJson
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import okhttp3.Cache
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
@@ -26,12 +28,16 @@ import okhttp3.Response
 import okio.IOException
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.io.File
 import java.util.Date
 import java.util.UUID
 
 class APIError(message: String) : Exception(message)
 
 object PinApi {
+
+    val cacheSize = 10L * 1024L * 1024L // 10 MiB
+    val cache = Cache(File(PinSyncApp.applicationContext().cacheDir, "http-cache"), cacheSize)
 
     /// The UserInfo object returned as part of the session info.
     @JsonClass(generateAdapter = true)
@@ -133,18 +139,54 @@ object PinApi {
 //        level = HttpLoggingInterceptor.Level.BODY
 //    }
 
+//    Initial attempts at creating an offline mode of sorts... seems we're going to have have to
+//    implement this at a higher level in order for it to work.  As it currently stands, any attempt to
+//    hit the cache was resulting in a 504 error.
+
+//    private val offlineInterceptor = Interceptor { chain ->
+//        var request = chain.request()
+//        if (!isOnline()) {
+//            // Forcing cache:
+//            request = request.newBuilder()
+//                .header("Cache-Control", "public, only-if-cached, max-stale=" + 2419200)
+//                .build()
+//            // Alternatively, return a mock response.  We could attempt to come up with a variety of
+//            // "special" mock responses here that would instruct the code parsing the responses to
+//            // ignore them.
+//        }
+//        chain.proceed(request)
+//    }
+
+    // Cache some responses so we won't necessarily crash if we're offline
+//    class CacheInterceptor : Interceptor {
+//        override fun intercept(chain: Interceptor.Chain): Response {
+//            val response = chain.proceed(chain.request())
+//            val cacheControl = CacheControl.Builder()
+//                .maxAge(10, TimeUnit.DAYS)
+//                .build()
+//            return response.newBuilder()
+//                .header("Cache-Control", cacheControl.toString())
+//                .build()
+//        }
+//    }
     // This client is used to interact with the content server.  Note that addition of the
     // AuthInterceptor which kicks in whenever there is a 401 or 403 error.
     private val okHttpClient = OkHttpClient.Builder()
 //        .addInterceptor(DummyInterceptor())
 //        .addInterceptor(loggingInterceptor)
-        .cookieJar(WebViewCookieHandler())
+        .cache(cache)
+//        .addInterceptor(offlineInterceptor)
         .addInterceptor(AuthInterceptor())
+//        .addNetworkInterceptor(CacheInterceptor()) // Adds Cache-Control header for responses
+        .cookieJar(WebViewCookieHandler())
         .build()
 
     // This client is used only for interacting with the session server.
     private val sessionOkHttpClient = OkHttpClient.Builder()
 //        .addInterceptor(loggingInterceptor)
+        .cache(cache)
+//        .addInterceptor(offlineInterceptor)
+//        .addNetworkInterceptor(CacheInterceptor()) // Adds Cache-Control header for responses
         .cookieJar(WebViewCookieHandler())
         .build()
 
@@ -280,6 +322,24 @@ object PinApi {
         }
         return false
     }
+
+    // Determine whether we're online or not, based on network state.
+//    fun isOnline() : Boolean {
+//        val connectivityManager = PinSyncApp.applicationContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+//
+//        try {
+//            val activeNetwork = connectivityManager.activeNetwork
+//            val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+//            return networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ?: false
+//        }
+//        catch (securityException : SecurityException) {
+//            Log.e("PinApi", "SecurityException: " + securityException.message)
+//            // We have no real choice but to return true here and let the application crash.
+//            // Otherwise, we risk not operating when we're actually online, but the user has chosen
+//            // not to let us know.
+//            return true
+//        }
+//    }
 
     // Sending a request to the session URL will result in the generation of a new SessionInfo
     // object containing a valid Access Token which can, in turn, be used as the Bearer token for

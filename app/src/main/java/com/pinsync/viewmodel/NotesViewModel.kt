@@ -60,7 +60,6 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
         timer?.schedule(object : TimerTask() {
             override fun run() {
                 viewModelScope.launch (Dispatchers.IO) {notesRepository.refreshNotes()}
-                //currentPagingSource?.invalidate()
             }
         }, 0, 5000) // Schedule the task to run every 5 seconds
     }

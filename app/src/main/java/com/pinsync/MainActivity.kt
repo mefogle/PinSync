@@ -65,7 +65,6 @@ class MainActivity : ComponentActivity() {
                                 )
                                 Log.d("MainActivity", "size = ${(uiState as NewNotesUIState.Success<LiveData<List<ObjectWithNote>>>).data.value?.size}")
 
-                                //viewModel.pagingDataFlow.collectAsLazyPagingItems()
                                 newItems?.let { content ->
                                     //progressBar.visibility = View.GONE
                                     Log.d("MainActivity", "size = ${content.size}")

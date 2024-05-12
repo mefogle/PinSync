@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.pinsync.data.NotesRepository
 
 class ViewModelFactory(private val notesRepository: NotesRepository) : ViewModelProvider.Factory {
-    @SuppressWarnings("unchecked")
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(NotesViewModel::class.java))
             return NotesViewModel(notesRepository) as T
