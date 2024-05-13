@@ -17,7 +17,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pinsync.api.PinApi
 import com.pinsync.ui.AuthDialog
-import com.pinsync.ui.PinSyncApp
 import com.pinsync.ui.theme.PinSyncTheme
 import com.pinsync.viewmodel.NotesViewModel
 import com.pinsync.viewmodel.ViewModelFactory
@@ -47,7 +46,7 @@ abstract class PinSyncActivity : ComponentActivity() {
                         val uiState by viewModel.listUiState.collectAsStateWithLifecycle()
                         if (!uiState.loading) {
                             if (uiState.error == null)
-                                activityBody()
+                                ActivityBody()
                             else {
                                 Toast.makeText(
                                     this,
@@ -61,7 +60,6 @@ abstract class PinSyncActivity : ComponentActivity() {
             }
         }
     }
-
     @Composable
-    abstract fun activityBody () : Unit
+    abstract fun ActivityBody ()
 }
