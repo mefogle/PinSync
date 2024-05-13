@@ -1,42 +1,44 @@
 package com.pinsync.ui
 
-import android.util.Log
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.pinsync.ui.components.NoteListItem
-import com.pinsync.ui.navigation.PinSyncRoute
-import com.pinsync.viewmodel.NotesUIState
+import com.pinsync.ui.components.PinSyncFAB
+import com.pinsync.ui.navigation.PinSyncRoute.NOTE_DETAIL
 import com.pinsync.viewmodel.NotesViewModel
-import com.pinsync.viewmodel.ObjectsWithNotesLiveData
 
 @Composable
 fun NotesListScreen (
     navController: NavController,
     viewModel: NotesViewModel,
-//    closeDetailScreen: () -> Unit,
-//    navigateToDetail: (UUID) -> Unit,
-//    addNew: () -> Unit,
     modifier: Modifier = Modifier
 )
 {
     val uiState by viewModel.listUiState.collectAsStateWithLifecycle()
-    val newItems = (uiState as NotesUIState.Success<ObjectsWithNotesLiveData>).data.observeAsState().value
-    newItems?.let { content ->
-        Log.d("NotesListScreen", "size = ${content.size}")
-        LazyColumn (modifier) {
+    val newItems = uiState.notes
+    Scaffold(
+        floatingActionButton = {
+            PinSyncFAB(onClick = {
+                viewModel.addNew()
+                navController.navigate(NOTE_DETAIL)})
+        })
+    { innerPadding ->
+    newItems.let { content ->
+        LazyColumn (modifier.padding(innerPadding)) {
             content.let { it ->
                 items(newItems.size) { noteIndex ->
                     it[noteIndex].let { note ->
                         NoteListItem(
                             note.note,
                             navigateToDetail = {
-                                 viewModel.selectNote(note)
-                                 navController.navigate(PinSyncRoute.NOTE_DETAIL)
+                                viewModel.editExisting(note.container.uuid)
+                                navController.navigate(NOTE_DETAIL)
                             },
                             toggleFavorite = {
                                 viewModel.setFavorite(
@@ -57,4 +59,5 @@ fun NotesListScreen (
             }
         }
     }
+}
 }

@@ -2,7 +2,6 @@ package com.pinsync.api
 
 import android.util.Log
 import android.webkit.CookieManager
-import com.pinsync.PinSyncApplication
 import com.pinsync.data.ContentData
 import com.pinsync.data.ContentType
 import com.pinsync.data.Note
@@ -17,7 +16,6 @@ import com.squareup.moshi.ToJson
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import okhttp3.Cache
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
@@ -28,7 +26,6 @@ import okhttp3.Response
 import okio.IOException
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import java.io.File
 import java.util.Date
 import java.util.UUID
 
@@ -36,8 +33,8 @@ class APIError(message: String) : Exception(message)
 
 object PinApi {
 
-    val cacheSize = 10L * 1024L * 1024L // 10 MiB
-    val cache = Cache(File(PinSyncApplication.applicationContext().cacheDir, "http-cache"), cacheSize)
+//    val cacheSize = 10L * 1024L * 1024L // 10 MiB
+//    val cache = Cache(File(PinSyncApplication.applicationContext().cacheDir, "http-cache"), cacheSize)
 
     /// The UserInfo object returned as part of the session info.
     @JsonClass(generateAdapter = true)
@@ -68,6 +65,12 @@ object PinApi {
         val note: Note
     ) :
         ContentData(uuid, location, latitude, longitude, createdAt, lastModifiedAt, state, ContentType.GENERIC_NOTE)
+
+    // We need a data class with just the title and text for the create & update DTOs
+    data class NoteCreateDTO (
+        val title: String,
+        val text: String
+    )
 
     // The Object object is used for wrapping other content types.
     @JsonClass(generateAdapter = true)
@@ -174,7 +177,7 @@ object PinApi {
     private val okHttpClient = OkHttpClient.Builder()
 //        .addInterceptor(DummyInterceptor())
 //        .addInterceptor(loggingInterceptor)
-        .cache(cache)
+//        .cache(cache)
 //        .addInterceptor(offlineInterceptor)
         .addInterceptor(AuthInterceptor())
 //        .addNetworkInterceptor(CacheInterceptor()) // Adds Cache-Control header for responses
@@ -184,7 +187,7 @@ object PinApi {
     // This client is used only for interacting with the session server.
     private val sessionOkHttpClient = OkHttpClient.Builder()
 //        .addInterceptor(loggingInterceptor)
-        .cache(cache)
+//        .cache(cache)
 //        .addInterceptor(offlineInterceptor)
 //        .addNetworkInterceptor(CacheInterceptor()) // Adds Cache-Control header for responses
         .cookieJar(WebViewCookieHandler())

@@ -19,7 +19,6 @@ import com.pinsync.data.NotesRepositoryImpl
 import com.pinsync.ui.AuthDialog
 import com.pinsync.ui.PinSyncApp
 import com.pinsync.ui.theme.PinSyncTheme
-import com.pinsync.viewmodel.NotesUIState
 import com.pinsync.viewmodel.NotesViewModel
 import com.pinsync.viewmodel.ViewModelFactory
 
@@ -44,22 +43,15 @@ class MainActivity : ComponentActivity() {
                         viewModel =
                             viewModel(factory = ViewModelFactory(NotesRepositoryImpl(PinApi.pinApiService)))
                         val uiState by viewModel.listUiState.collectAsStateWithLifecycle()
-                        when (uiState) {
-                            is NotesUIState.Loading -> {
-                                //progressBar.visibility = View.VISIBLE
-                            }
-                            is NotesUIState.Success -> {
-                                PinSyncApp(
-                                    viewModel = viewModel
-                                )
-                            }
-                            is NotesUIState.Error -> {
+                        if (!uiState.loading) {
+                            if (uiState.error == null)
+                                PinSyncApp(viewModel = viewModel)
+                            else {
                                 Toast.makeText(
                                     this,
-                                    "Error: " + (uiState as NotesUIState.Error).error,
+                                    "Error: " +  uiState.error,
                                     Toast.LENGTH_LONG
-                                )
-                                    .show()
+                                ).show()
                             }
                         }
                     }

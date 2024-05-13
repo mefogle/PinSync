@@ -96,6 +96,7 @@ private fun PinSyncNavHost(
         }
         composable(PinSyncRoute.NOTE_DETAIL) {
             NoteDetailScreen(
+                navController = navController,
                 viewModel = viewModel,
                 modifier = modifier
             )
