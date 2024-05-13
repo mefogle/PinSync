@@ -9,19 +9,19 @@ import kotlinx.coroutines.flow.flow
 import java.util.UUID
 
 class NotesRepositoryImpl (private val apiService: PinApiService) : NotesRepository {
-    private val objectDao = PinSyncApplication.db?.objectDao()
+    private val objectDao = PinSyncApplication.db.objectDao()
     override fun getAllNotes() = flow { emit(apiService.getNotes()) }
     override fun getNote(uuid: UUID): Flow<ObjectWithNote> {
-        return objectDao!!.getObjectWithNote(uuid)
+        return objectDao.getObjectWithNote(uuid)
     }
     override fun getObjectsWithNotes(): Flow<List<ObjectWithNote>> {
-        return objectDao!!.getObjectsWithNotes()
+        return objectDao.getObjectsWithNotes()
     }
 
     override suspend fun refreshNote(uuid: UUID) {
         val container = apiService.getMemory(uuid)
         val objectEntity = mapObjectDtoToEntity(container)
-        objectDao?.insertWithNote(objectEntity)
+        objectDao.insertWithNote(objectEntity)
     }
 
     override suspend fun deleteNote(uuid: UUID) {
@@ -47,20 +47,26 @@ class NotesRepositoryImpl (private val apiService: PinApiService) : NotesReposit
             val validUUIDs = contentObjectEntities.map { it.uuid }
 
             if (contentObjectEntities.isNotEmpty()) {
-                objectDao?.insertAllWithNotes(contentObjectEntities)
-                objectDao?.removeDeletedObjects(validUUIDs)
+                objectDao.insertAllWithNotes(contentObjectEntities)
+                objectDao.removeDeletedObjects(validUUIDs)
             } else {
                 // The database is empty... or we think it is.
-                objectDao?.removeAll()
+                objectDao.removeAll()
             }
         }
         catch (e: Exception) {
-            Log.e("NotesRepositoryImpl", "Unexpected error refreshNotes: ", e)
+            Log.e("NotesRepositoryImpl", "Unexpected error in refreshNotes: ", e)
         }
     }
 
-    override suspend fun favoriteNote(uuid: UUID) = apiService.favorite(uuid)
-    override suspend fun unfavoriteNote(uuid: UUID) = apiService.unfavorite(uuid)
+    override suspend fun favoriteNote(uuid: UUID) {
+        apiService.favorite(uuid)
+        refreshNote(uuid)
+    }
+    override suspend fun unfavoriteNote(uuid: UUID) {
+        apiService.unfavorite(uuid)
+        refreshNote(uuid)
+    }
     override suspend fun updateNote(uuid: UUID, note: Note): Flow<ObjectWithNote> {
         // When updating, it's important that the uuid not be specified in the note body.
         val container = apiService.updateNote(uuid,
@@ -68,8 +74,8 @@ class NotesRepositoryImpl (private val apiService: PinApiService) : NotesReposit
         )
 
         val objectEntity = mapObjectDtoToEntity(container)
-        objectDao?.insertWithNote(objectEntity)
-        return objectDao!!.getObjectWithNote(objectEntity.uuid)
+        objectDao.insertWithNote(objectEntity)
+        return objectDao.getObjectWithNote(objectEntity.uuid)
     }
 
     override suspend fun createNote(note: Note): Flow<ObjectWithNote> {
@@ -78,7 +84,7 @@ class NotesRepositoryImpl (private val apiService: PinApiService) : NotesReposit
             PinApi.NoteCreateDTO(note.title, note.text)
         )
         val objectEntity = mapObjectDtoToEntity(container)
-        objectDao?.insertWithNote(objectEntity)
-        return objectDao!!.getObjectWithNote(objectEntity.uuid)
+        objectDao.insertWithNote(objectEntity)
+        return objectDao.getObjectWithNote(objectEntity.uuid)
     }
 }

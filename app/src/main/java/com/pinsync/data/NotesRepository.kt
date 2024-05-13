@@ -2,7 +2,6 @@ package com.pinsync.data
 
 import com.pinsync.api.PinApi
 import kotlinx.coroutines.flow.Flow
-import retrofit2.Response
 import java.util.UUID
 
 /**
@@ -22,9 +21,9 @@ interface NotesRepository {
 
     suspend fun deleteNote(uuid: UUID)
 
-    suspend fun favoriteNote(uuid: UUID) : Response<Unit>
+    suspend fun favoriteNote(uuid: UUID)
 
-    suspend fun unfavoriteNote(uuid: UUID) : Response<Unit>
+    suspend fun unfavoriteNote(uuid: UUID)
     suspend fun updateNote(uuid: UUID, note : Note): Flow<ObjectWithNote>
     suspend fun createNote(note: Note): Flow<ObjectWithNote>
 }

@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Timer
 import java.util.TimerTask
@@ -28,14 +29,13 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
 
     fun editExisting(noteId: UUID) {
         _detailUiState.value = NoteDetailUIState (loading = true)
-        viewModelScope.launch{
-            notesRepository.getNote(noteId)
+        viewModelScope.launch (Dispatchers.IO) {
+            val note = notesRepository.getNote(noteId)
                 .catch {ex ->
                     _detailUiState.value = NoteDetailUIState (error = ex.message)
                 }
-                .collect { note->
-                    _detailUiState.value = NoteDetailUIState  (isDetailOnlyOpen = true, currentNote = note)
-                }
+                .first()
+            _detailUiState.value = _detailUiState.value.copy (loading = false, isDetailOnlyOpen = true, currentNote = note)
         }
     }
 
@@ -44,7 +44,7 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
         // a UUID, an empty one will be used instead.
         val emptyNote = ObjectWithNote(
             ContentObject(contentType = ContentType.GENERIC_NOTE), note = NoteData(note = Note()))
-        _detailUiState.value = NoteDetailUIState  (isDetailOnlyOpen = true, currentNote = emptyNote)
+        _detailUiState.value = _detailUiState.value.copy (loading = false, isDetailOnlyOpen = true, currentNote = emptyNote)
     }
 
     fun updateNote (note: ObjectWithNote) {
@@ -56,18 +56,17 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
                     .catch {ex ->
                         _detailUiState.value = NoteDetailUIState (error = ex.message)
                     }
-                    .collect {
-                        _detailUiState.value = NoteDetailUIState (isDetailOnlyOpen = false)
-                    }
+                    .first ()
+                _detailUiState.value = _detailUiState.value.copy (loading = false, isDetailOnlyOpen = false)
             }
             else {
                 notesRepository.createNote(note.note.note)
                     .catch {ex ->
                         _detailUiState.value = NoteDetailUIState (error = ex.message)
                     }
-                    .collect {
-                        _detailUiState.value = NoteDetailUIState (isDetailOnlyOpen = false)
-                    }
+                    .first ()
+                _detailUiState.value = _detailUiState.value.copy (loading = false, isDetailOnlyOpen = false)
+
             }
         }
     }
@@ -80,7 +79,7 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
 //        viewModelScope.launch {
 //            _listUiState.value = NotesUIState.Success(emptySet(), false, allNotes)
 //        }
-        viewModelScope.launch{
+        viewModelScope.launch (Dispatchers.IO) {
             notesRepository.getObjectsWithNotes()
                 .catch {ex ->
                     _listUiState.value = NoteListUIState (error = ex.message)
@@ -93,18 +92,15 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
     }
 
     fun deleteNote(note: ObjectWithNote) {
-        viewModelScope.launch {
+        viewModelScope.launch (Dispatchers.IO) {
             notesRepository.deleteNote(note.container.uuid)
-            viewModelScope.launch (Dispatchers.IO) {
-                notesRepository.refreshNotes()
-                _detailUiState.value = NoteDetailUIState (isDetailOnlyOpen = false)
-            }
+            _detailUiState.value = _detailUiState.value.copy (isDetailOnlyOpen = false)
         }
     }
 
     // Note that the UUID here is the UUID of the content envelope, not the UUID of the NoteData.
     fun setFavorite (uuid: UUID, isFavorite: Boolean){
-        viewModelScope.launch {
+        viewModelScope.launch (Dispatchers.IO) {
             // Note that we need to pass in the UUID of the content element,
             // not the UUID of the NoteData.
             if (isFavorite) {
@@ -112,7 +108,6 @@ class NotesViewModel (private val notesRepository: NotesRepository) : ViewModel(
             } else {
                 notesRepository.unfavoriteNote(uuid)
             }
-            viewModelScope.launch (Dispatchers.IO) {notesRepository.refreshNote(uuid)}
         }
     }
 

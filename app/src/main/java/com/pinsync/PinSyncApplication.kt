@@ -8,10 +8,10 @@ import com.pinsync.data.PinDatabase
 class PinSyncApplication : Application() {
 
     companion object {
-        var db: PinDatabase? = null
+        lateinit var db: PinDatabase
         private var instance: PinSyncApplication? = null
 
-        fun applicationContext(): Context = instance!!.applicationContext
+        //fun applicationContext(): Context = instance!!.applicationContext
     }
 
     override fun onCreate() {

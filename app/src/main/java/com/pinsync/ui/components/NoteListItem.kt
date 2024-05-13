@@ -1,12 +1,9 @@
 package com.pinsync.ui.components
 
 import android.text.format.DateFormat
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,7 +24,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -75,17 +71,17 @@ fun NoteListItem(
                     .padding(20.dp)
             ) {
                 Row(modifier = Modifier.fillMaxWidth()) {
-                    val clickModifier = Modifier.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) { toggleSelection() }
-                    AnimatedContent(targetState = isSelected, label = "avatar") { selected ->
-                        if (selected) {
-                            SelectedImage(clickModifier)
-                        } else {
-                            UnselectedImage(clickModifier)
-                        }
-                    }
+//                    val clickModifier = Modifier.clickable(
+//                        interactionSource = remember { MutableInteractionSource() },
+//                        indication = null
+//                    ) { toggleSelection() }
+//                    AnimatedContent(targetState = isSelected, label = "avatar") { selected ->
+//                        if (selected) {
+//                            SelectedImage(clickModifier)
+//                        } else {
+//                            UnselectedImage(clickModifier)
+//                        }
+//                    }
                     Column(
                         modifier = Modifier
                             .weight(1f)
@@ -95,14 +91,12 @@ fun NoteListItem(
                         Text(
                             text = it.note.title,
                             style = MaterialTheme.typography.headlineSmall,
-                            maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                         Text(
                             text = it.note.text,
                             style = MaterialTheme.typography.bodyMedium,
-                            maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
@@ -133,24 +127,24 @@ fun NoteListItem(
     }
 }
 
-@Composable
-fun SelectedImage(modifier: Modifier = Modifier) {
-    Box(
-        modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primary)
-    ) {
-        Icon(
-            Icons.Default.Check,
-            contentDescription = null,
-            modifier = Modifier
-                .size(24.dp)
-                .align(Alignment.Center),
-            tint = MaterialTheme.colorScheme.onPrimary
-        )
-    }
-}
+//@Composable
+//fun SelectedImage(modifier: Modifier = Modifier) {
+//    Box(
+//        modifier
+//            .size(40.dp)
+//            .clip(CircleShape)
+//            .background(MaterialTheme.colorScheme.primary)
+//    ) {
+//        Icon(
+//            Icons.Default.Check,
+//            contentDescription = null,
+//            modifier = Modifier
+//                .size(24.dp)
+//                .align(Alignment.Center),
+//            tint = MaterialTheme.colorScheme.onPrimary
+//        )
+//    }
+//}
 
 @Composable
 fun UnselectedImage(modifier: Modifier = Modifier) {

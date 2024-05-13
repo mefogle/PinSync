@@ -94,9 +94,9 @@ fun NoteDetailScreen(
                     }
                 }
                 else {
-                    // Item has been saved or deleted, so pop the stack
+                    // Item has been saved or deleted, so navigate up
                    LaunchedEffect(Unit) {
-                        navController.popBackStack()
+                        navController.navigateUp()
                    }
                 }
             }
