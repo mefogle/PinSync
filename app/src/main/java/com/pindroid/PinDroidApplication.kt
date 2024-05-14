@@ -1,17 +1,17 @@
-package com.pinsync
+package com.pindroid
 
 import android.app.Application
 import androidx.room.Room
-import com.pinsync.api.PinApi
-import com.pinsync.data.NotesRepository
-import com.pinsync.data.NotesRepositoryImpl
-import com.pinsync.data.PinDatabase
+import com.pindroid.api.PinApi
+import com.pindroid.data.NotesRepository
+import com.pindroid.data.NotesRepositoryImpl
+import com.pindroid.data.PinDatabase
 
-class PinSyncApplication : Application() {
+class PinDroidApplication : Application() {
 
     companion object {
         lateinit var db: PinDatabase
-        private var instance: PinSyncApplication? = null
+        private var instance: PinDroidApplication? = null
 
         private lateinit var _notesRepository: NotesRepository
 
@@ -22,7 +22,7 @@ class PinSyncApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        db = Room.databaseBuilder(applicationContext, PinDatabase::class.java, "pin-sync-database")
+        db = Room.databaseBuilder(applicationContext, PinDatabase::class.java, "pin-droid-database")
             .fallbackToDestructiveMigration() // Handle migrations
             .build()
         _notesRepository = NotesRepositoryImpl(PinApi.pinApiService)

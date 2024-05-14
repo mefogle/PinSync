@@ -1,4 +1,4 @@
-package com.pinsync
+package com.pindroid
 
 import android.os.Bundle
 import android.widget.Toast
@@ -13,15 +13,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.pinsync.api.PinApi
-import com.pinsync.ui.AuthDialog
-import com.pinsync.ui.theme.PinSyncTheme
-import com.pinsync.viewmodel.NotesViewModel
-import com.pinsync.viewmodel.ViewModelFactory
+import com.pindroid.api.PinApi
+import com.pindroid.ui.AuthDialog
+import com.pindroid.ui.theme.PinDroidTheme
+import com.pindroid.viewmodel.NotesViewModel
+import com.pindroid.viewmodel.ViewModelFactory
 
-abstract class PinSyncActivity : ComponentActivity() {
+abstract class PinDroidActivity : ComponentActivity() {
 
     companion object {
         lateinit var viewModel: NotesViewModel
@@ -30,7 +31,7 @@ abstract class PinSyncActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            PinSyncTheme {
+            PinDroidTheme {
                 var showDialog by remember { mutableStateOf(true) }
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -42,7 +43,7 @@ abstract class PinSyncActivity : ComponentActivity() {
                         AuthDialog(onDismissRequest = { showDialog = false })
                     } else {
                         viewModel =
-                            viewModel(factory = ViewModelFactory(PinSyncApplication.notesRepository()))
+                            viewModel(factory = ViewModelFactory(PinDroidApplication.notesRepository()))
                         val uiState by viewModel.listUiState.collectAsStateWithLifecycle()
                         if (!uiState.loading) {
                             if (uiState.error == null)
@@ -50,7 +51,7 @@ abstract class PinSyncActivity : ComponentActivity() {
                             else {
                                 Toast.makeText(
                                     this,
-                                    "Error: " + uiState.error,
+                                    stringResource(R.string.error_toast_label) + uiState.error,
                                     Toast.LENGTH_LONG
                                 ).show()
                             }

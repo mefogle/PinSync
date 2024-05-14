@@ -1,4 +1,4 @@
-package com.pinsync.ui
+package com.pindroid.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -11,40 +11,30 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.pinsync.ui.navigation.PinSyncRoute
-import com.pinsync.viewmodel.NotesViewModel
+import com.pindroid.ui.navigation.PinDroidRoute
+import com.pindroid.viewmodel.NotesViewModel
 
 @Composable
-fun PinSyncApp(
+fun PinDroidApp(
     viewModel: NotesViewModel,
 //    closeDetailScreen: () -> Unit = {}
 ) {
-    PinSyncNavigationWrapper(
+    PinDroidNavigationWrapper(
         viewModel = viewModel,
 //        closeDetailScreen = closeDetailScreen
     )
 }
 
 @Composable
-private fun PinSyncNavigationWrapper(
-    viewModel: NotesViewModel,
-//    closeDetailScreen: () -> Unit
+private fun PinDroidNavigationWrapper(
+    viewModel: NotesViewModel
 ) {
     val navController = rememberNavController()
-//    val navigationActions = remember(navController) {
-//        PinSyncNavigationActions(navController)
-//    }
-    //   val navBackStackEntry by navController.currentBackStackEntryAsState()
-//    val selectedDestination =
-//        navBackStackEntry?.destination?.route ?: PinSyncRoute.NOTES
 
     SyncAppContent(
         modifier = Modifier,
         viewModel = viewModel,
         navController = navController,
-//        selectedDestination = selectedDestination,
-//        navigateToTopLevelDestination = navigationActions::navigateTo,
-//        closeDetailScreen = closeDetailScreen
     )
 }
 
@@ -53,9 +43,6 @@ fun SyncAppContent(
     modifier: Modifier = Modifier,
     viewModel: NotesViewModel,
     navController: NavHostController,
-//    selectedDestination: String,
-//    navigateToTopLevelDestination: (PinSyncTopLevelDestination) -> Unit,
-    //    closeDetailScreen: () -> Unit
 ) {
     Row(modifier = modifier.fillMaxSize()) {
         Column(
@@ -63,10 +50,9 @@ fun SyncAppContent(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surfaceContainerLow)
         ) {
-            PinSyncNavHost(
+            PinDroidNavHost(
                 navController = navController,
                 viewModel = viewModel,
-                //               closeDetailScreen = closeDetailScreen,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -74,27 +60,24 @@ fun SyncAppContent(
 }
 
 @Composable
-private fun PinSyncNavHost(
+private fun PinDroidNavHost(
     navController: NavHostController,
     viewModel: NotesViewModel,
-//    closeDetailScreen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = PinSyncRoute.NOTES,
+        startDestination = PinDroidRoute.NOTES,
     ) {
-        composable(PinSyncRoute.NOTES) {
+        composable(PinDroidRoute.NOTES) {
             NotesListScreen(
                 navController = navController,
                 viewModel = viewModel,
-//                closeDetailScreen = closeDetailScreen,
-//                navigateToDetail = {},
                 modifier = modifier
             )
         }
-        composable(PinSyncRoute.NOTE_DETAIL) {
+        composable(PinDroidRoute.NOTE_DETAIL) {
             NoteDetailScreen(
                 navController = navController,
                 viewModel = viewModel,

@@ -1,16 +1,16 @@
-package com.pinsync.data
+package com.pindroid.data
 
 import android.util.Log
-import com.pinsync.PinSyncApplication
-import com.pinsync.api.PinApi
-import com.pinsync.api.PinApiService
+import com.pindroid.PinDroidApplication
+import com.pindroid.api.PinApi
+import com.pindroid.api.PinApiService
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
 import java.util.UUID
 
 @Suppress("UNNECESSARY_SAFE_CALL") // Needed to handle the occasional null object.
 class NotesRepositoryImpl(private val apiService: PinApiService) : NotesRepository {
-    private val objectDao = PinSyncApplication.db.objectDao()
+    private val objectDao = PinDroidApplication.db.objectDao()
     private var mostRecentTimeStamp : Date = Date()
     private var mostRecentRecordCount = 0
     override fun getNote(uuid: UUID): Flow<ObjectWithNote> {

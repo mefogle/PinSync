@@ -1,4 +1,4 @@
-package com.pinsync
+package com.pindroid
 
 import android.content.Intent
 import android.text.format.DateFormat
@@ -9,12 +9,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.lifecycleScope
-import com.pinsync.data.Note
+import com.pindroid.data.Note
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Date
 
-class ShareActivity : PinSyncActivity() {
+class ShareActivity : PinDroidActivity() {
 
     @Composable
     override fun ActivityBody() {
@@ -32,7 +32,7 @@ class ShareActivity : PinSyncActivity() {
             }
             LaunchedEffect(Unit) {
                 lifecycleScope.launch(Dispatchers.IO) {
-                    PinSyncApplication.notesRepository()
+                    PinDroidApplication.notesRepository()
                         .createNote(Note(title = sharedTitle, text = sharedText))
                     finish()
                 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PinSync</string>
+    <string name="app_name">PinDroid</string>
     <string name="note_description">Note</string>
     <string name="favorite_description">Favorite</string>
     <string name="add">Add</string>
@@ -8,4 +8,5 @@
     <string name="text">Text</string>
     <string name="title">Title</string>
     <string name="cancel">Cancel</string>
+    <string name="error_toast_label">"Error: "</string>
 </resources>

@@ -1,13 +1,13 @@
-package com.pinsync.viewmodel
+package com.pindroid.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pinsync.data.ContentObject
-import com.pinsync.data.ContentType
-import com.pinsync.data.Note
-import com.pinsync.data.NoteData
-import com.pinsync.data.NotesRepository
-import com.pinsync.data.ObjectWithNote
+import com.pindroid.data.ContentObject
+import com.pindroid.data.ContentType
+import com.pindroid.data.Note
+import com.pindroid.data.NoteData
+import com.pindroid.data.NotesRepository
+import com.pindroid.data.ObjectWithNote
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -86,13 +86,6 @@ class NotesViewModel(private val notesRepository: NotesRepository) : ViewModel()
     }
 
     init {
-        // Initialize the UI state to loading
-        //_listUiState.value = NotesUIState.Loading
-        //_allNotes = notesRepository.getObjectsWithNotes()
-        //allNotes = _allNotes
-//        viewModelScope.launch {
-//            _listUiState.value = NotesUIState.Success(emptySet(), false, allNotes)
-//        }
         viewModelScope.launch(Dispatchers.IO) {
             notesRepository.getObjectsWithNotes()
                 .catch { ex ->

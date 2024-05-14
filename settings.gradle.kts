@@ -20,6 +20,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Pinsync"
+rootProject.name = "PinDroid"
 include(":app")
  

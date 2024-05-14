@@ -1,4 +1,4 @@
-package com.pinsync.data
+package com.pindroid.data
 
 import androidx.room.ColumnInfo
 import androidx.room.Dao

@@ -1,4 +1,4 @@
-package com.pinsync.ui
+package com.pindroid.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,18 +32,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.pinsync.R
-import com.pinsync.viewmodel.NotesViewModel
+import com.pindroid.R
+import com.pindroid.viewmodel.NotesViewModel
 
 @Composable
 fun NoteDetailScreen(
     navController: NavController,
     viewModel: NotesViewModel,
-//    title: String,
-//    notes: String,
-//    isEditing: Boolean,
-//    onEditButtonClick: () -> Unit,
-//    onDeleteButtonClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 

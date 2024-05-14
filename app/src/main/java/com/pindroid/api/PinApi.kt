@@ -1,10 +1,10 @@
-package com.pinsync.api
+package com.pindroid.api
 
 import android.util.Log
 import android.webkit.CookieManager
-import com.pinsync.data.ContentData
-import com.pinsync.data.ContentType
-import com.pinsync.data.Note
+import com.pindroid.data.ContentData
+import com.pindroid.data.ContentType
+import com.pindroid.data.Note
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.JsonClass
@@ -34,7 +34,7 @@ class APIError(message: String) : Exception(message)
 object PinApi {
 
 //    val cacheSize = 10L * 1024L * 1024L // 10 MiB
-//    val cache = Cache(File(PinSyncApplication.applicationContext().cacheDir, "http-cache"), cacheSize)
+//    val cache = Cache(File(PinDroidApplication.applicationContext().cacheDir, "http-cache"), cacheSize)
 
     /// The UserInfo object returned as part of the session info.
     @JsonClass(generateAdapter = true)
@@ -337,7 +337,7 @@ object PinApi {
 
     // Determine whether we're online or not, based on network state.
 //    fun isOnline() : Boolean {
-//        val connectivityManager = PinSyncApp.applicationContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+//        val connectivityManager = PinDroidApp.applicationContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 //
 //        try {
 //            val activeNetwork = connectivityManager.activeNetwork
