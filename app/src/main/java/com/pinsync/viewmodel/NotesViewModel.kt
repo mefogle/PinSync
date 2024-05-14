@@ -1,13 +1,13 @@
-package com.pindroid.viewmodel
+package com.pinsync.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pindroid.data.ContentObject
-import com.pindroid.data.ContentType
-import com.pindroid.data.Note
-import com.pindroid.data.NoteData
-import com.pindroid.data.NotesRepository
-import com.pindroid.data.ObjectWithNote
+import com.pinsync.data.ContentObject
+import com.pinsync.data.ContentType
+import com.pinsync.data.Note
+import com.pinsync.data.NoteData
+import com.pinsync.data.NotesRepository
+import com.pinsync.data.ObjectWithNote
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

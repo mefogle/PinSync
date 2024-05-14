@@ -1,4 +1,4 @@
-package com.pindroid.ui.theme
+package com.pinsync.ui.theme
 
 import android.app.Activity
 import android.os.Build
@@ -93,7 +93,7 @@ private val darkScheme = darkColorScheme(
 
 
 @Composable
-fun PinDroidTheme(
+fun PinSyncTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,

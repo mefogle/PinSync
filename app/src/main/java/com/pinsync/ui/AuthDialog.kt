@@ -1,4 +1,4 @@
-package com.pindroid.ui
+package com.pinsync.ui
 
 import android.util.Log
 import android.view.ViewGroup
@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.pindroid.api.PinApi
+import com.pinsync.api.PinApi
 
 @Composable
 fun AuthDialog(onDismissRequest: () -> Unit) {

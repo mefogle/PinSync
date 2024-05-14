@@ -1,4 +1,4 @@
-# PinDroid
+# PinSync
 Android app for Humane Ai Pin
 Features : 
 * Automatic sync of all Notes

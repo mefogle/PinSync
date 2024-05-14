@@ -1,8 +1,8 @@
-package com.pindroid.viewmodel
+package com.pinsync.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.pindroid.data.NotesRepository
+import com.pinsync.data.NotesRepository
 
 class ViewModelFactory(private val notesRepository: NotesRepository) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")

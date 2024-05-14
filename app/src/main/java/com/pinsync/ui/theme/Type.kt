@@ -1,4 +1,4 @@
-package com.pindroid.ui.theme
+package com.pinsync.ui.theme
 
 import androidx.compose.material3.Typography
 

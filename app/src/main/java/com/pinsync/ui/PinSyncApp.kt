@@ -1,4 +1,4 @@
-package com.pindroid.ui
+package com.pinsync.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -11,22 +11,22 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.pindroid.ui.navigation.PinDroidRoute
-import com.pindroid.viewmodel.NotesViewModel
+import com.pinsync.ui.navigation.PinSyncRoute
+import com.pinsync.viewmodel.NotesViewModel
 
 @Composable
-fun PinDroidApp(
+fun PinSyncApp(
     viewModel: NotesViewModel,
 //    closeDetailScreen: () -> Unit = {}
 ) {
-    PinDroidNavigationWrapper(
+    PinSyncNavigationWrapper(
         viewModel = viewModel,
 //        closeDetailScreen = closeDetailScreen
     )
 }
 
 @Composable
-private fun PinDroidNavigationWrapper(
+private fun PinSyncNavigationWrapper(
     viewModel: NotesViewModel
 ) {
     val navController = rememberNavController()
@@ -50,7 +50,7 @@ fun SyncAppContent(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surfaceContainerLow)
         ) {
-            PinDroidNavHost(
+            PinSyncNavHost(
                 navController = navController,
                 viewModel = viewModel,
                 modifier = Modifier.weight(1f),
@@ -60,7 +60,7 @@ fun SyncAppContent(
 }
 
 @Composable
-private fun PinDroidNavHost(
+private fun PinSyncNavHost(
     navController: NavHostController,
     viewModel: NotesViewModel,
     modifier: Modifier = Modifier,
@@ -68,16 +68,16 @@ private fun PinDroidNavHost(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = PinDroidRoute.NOTES,
+        startDestination = PinSyncRoute.NOTES,
     ) {
-        composable(PinDroidRoute.NOTES) {
+        composable(PinSyncRoute.NOTES) {
             NotesListScreen(
                 navController = navController,
                 viewModel = viewModel,
                 modifier = modifier
             )
         }
-        composable(PinDroidRoute.NOTE_DETAIL) {
+        composable(PinSyncRoute.NOTE_DETAIL) {
             NoteDetailScreen(
                 navController = navController,
                 viewModel = viewModel,

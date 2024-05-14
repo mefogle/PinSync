@@ -1,7 +1,7 @@
-package com.pindroid.data
+package com.pinsync.data
 
 import android.util.Log
-import com.pindroid.api.PinApi
+import com.pinsync.api.PinApi
 import java.util.Date
 import java.util.UUID
 

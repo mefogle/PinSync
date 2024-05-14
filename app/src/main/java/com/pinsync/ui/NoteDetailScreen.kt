@@ -1,4 +1,4 @@
-package com.pindroid.ui
+package com.pinsync.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,8 +32,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.pindroid.R
-import com.pindroid.viewmodel.NotesViewModel
+import com.pinsync.R
+import com.pinsync.viewmodel.NotesViewModel
 
 @Composable
 fun NoteDetailScreen(

@@ -1,4 +1,4 @@
-package com.pindroid.data
+package com.pinsync.data
 
 import kotlinx.coroutines.flow.Flow
 import java.util.UUID

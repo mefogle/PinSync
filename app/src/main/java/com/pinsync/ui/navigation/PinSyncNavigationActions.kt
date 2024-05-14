@@ -1,6 +1,6 @@
-package com.pindroid.ui.navigation
+package com.pinsync.ui.navigation
 
-object PinDroidRoute {
+object PinSyncRoute {
     const val NOTES = "notes"
     const val NOTE_DETAIL = "note_detail"
 }

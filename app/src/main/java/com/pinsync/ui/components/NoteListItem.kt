@@ -1,4 +1,4 @@
-package com.pindroid.ui.components
+package com.pinsync.ui.components
 
 import android.text.format.DateFormat
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -28,8 +28,8 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.pindroid.R
-import com.pindroid.data.NoteData
+import com.pinsync.R
+import com.pinsync.data.NoteData
 
 @OptIn(
     ExperimentalFoundationApi::class

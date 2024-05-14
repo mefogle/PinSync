@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.pindroid"
+    namespace = "com.pinsync"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.pindroid"
+        applicationId = "com.pinsync"
         minSdk = 23
         targetSdk = 34
         versionCode = 2

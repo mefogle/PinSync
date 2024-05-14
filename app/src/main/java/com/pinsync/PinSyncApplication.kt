@@ -1,17 +1,17 @@
-package com.pindroid
+package com.pinsync
 
 import android.app.Application
 import androidx.room.Room
-import com.pindroid.api.PinApi
-import com.pindroid.data.NotesRepository
-import com.pindroid.data.NotesRepositoryImpl
-import com.pindroid.data.PinDatabase
+import com.pinsync.api.PinApi
+import com.pinsync.data.NotesRepository
+import com.pinsync.data.NotesRepositoryImpl
+import com.pinsync.data.PinDatabase
 
-class PinDroidApplication : Application() {
+class PinSyncApplication : Application() {
 
     companion object {
         lateinit var db: PinDatabase
-        private var instance: PinDroidApplication? = null
+        private var instance: PinSyncApplication? = null
 
         private lateinit var _notesRepository: NotesRepository
 

@@ -1,4 +1,4 @@
-package com.pindroid
+package com.pinsync
 
 import android.os.Bundle
 import android.widget.Toast
@@ -16,13 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.pindroid.api.PinApi
-import com.pindroid.ui.AuthDialog
-import com.pindroid.ui.theme.PinDroidTheme
-import com.pindroid.viewmodel.NotesViewModel
-import com.pindroid.viewmodel.ViewModelFactory
+import com.pinsync.api.PinApi
+import com.pinsync.ui.AuthDialog
+import com.pinsync.ui.theme.PinSyncTheme
+import com.pinsync.viewmodel.NotesViewModel
+import com.pinsync.viewmodel.ViewModelFactory
 
-abstract class PinDroidActivity : ComponentActivity() {
+abstract class PinSyncActivity : ComponentActivity() {
 
     companion object {
         lateinit var viewModel: NotesViewModel
@@ -31,7 +31,7 @@ abstract class PinDroidActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            PinDroidTheme {
+            PinSyncTheme {
                 var showDialog by remember { mutableStateOf(true) }
                 // A surface container using the 'background' color from the theme
                 Surface(
@@ -43,7 +43,7 @@ abstract class PinDroidActivity : ComponentActivity() {
                         AuthDialog(onDismissRequest = { showDialog = false })
                     } else {
                         viewModel =
-                            viewModel(factory = ViewModelFactory(PinDroidApplication.notesRepository()))
+                            viewModel(factory = ViewModelFactory(PinSyncApplication.notesRepository()))
                         val uiState by viewModel.listUiState.collectAsStateWithLifecycle()
                         if (!uiState.loading) {
                             if (uiState.error == null)

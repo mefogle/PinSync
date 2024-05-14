@@ -1,4 +1,4 @@
-package com.pindroid.api
+package com.pinsync.api
 
 import retrofit2.Response
 import retrofit2.http.Body
