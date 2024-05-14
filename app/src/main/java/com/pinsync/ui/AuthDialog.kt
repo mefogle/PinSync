@@ -21,31 +21,35 @@ fun AuthDialog(onDismissRequest: () -> Unit) {
 
     val initialUrl = "https://humane.center"
     @Suppress("SetJavaScriptEnabled")
-    Dialog(onDismissRequest = { onDismissRequest() },
+    Dialog(
+        onDismissRequest = { onDismissRequest() },
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         // Content of the dialog
         AndroidView(
-            modifier = Modifier.fillMaxSize().padding(16.dp).clip(RoundedCornerShape(16.dp)),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .clip(RoundedCornerShape(16.dp)),
             factory = { context ->
-            WebView(context).apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                webViewClient = object : WebViewClient() {
-                    override fun onPageFinished(view: WebView, url: String?) {
-                        super.onPageFinished(view, url)
-                        if (PinApi.isAuthenticated()) {
-                            Log.d("AuthDialog", "Authentication complete")
-                            onDismissRequest()
+                WebView(context).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    webViewClient = object : WebViewClient() {
+                        override fun onPageFinished(view: WebView, url: String?) {
+                            super.onPageFinished(view, url)
+                            if (PinApi.isAuthenticated()) {
+                                Log.d("AuthDialog", "Authentication complete")
+                                onDismissRequest()
+                            }
                         }
                     }
+                    loadUrl(initialUrl)
+                    settings.javaScriptEnabled = true // Enable JavaScript
                 }
-                loadUrl(initialUrl)
-                settings.javaScriptEnabled = true // Enable JavaScript
-            }
-        })
+            })
     }
 }
 

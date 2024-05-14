@@ -25,6 +25,7 @@ import java.util.UUID
 enum class ContentType {
     GENERIC_NOTE
 }
+
 @Entity(tableName = "object")
 data class ContentObject(
     val contentType: ContentType,
@@ -35,7 +36,14 @@ data class ContentObject(
     val favorite: Boolean = false,
     @Ignore val contentData: ContentData? = null
 ) {
-    constructor(contentType: ContentType, uuid: UUID, userLastModified: Date, userCreatedAt: Date, originClientId: String, favorite: Boolean):
+    constructor(
+        contentType: ContentType,
+        uuid: UUID,
+        userLastModified: Date,
+        userCreatedAt: Date,
+        originClientId: String,
+        favorite: Boolean
+    ) :
             this(contentType, uuid, userLastModified, userCreatedAt, originClientId, favorite, null)
 }
 
@@ -53,7 +61,7 @@ abstract class ContentData(
     open var contentType: ContentType
 )
 
-abstract class ContentDataEntity (
+abstract class ContentDataEntity(
     override val uuid: UUID,
     override val location: String?,
     override val latitude: String?,
@@ -63,15 +71,19 @@ abstract class ContentDataEntity (
     override val state: String,
     @ColumnInfo(name = "parent_id") open val parentId: UUID?,
     override var contentType: ContentType
-) : ContentData (uuid, location, latitude, longitude, createdAt, lastModifiedAt, state, contentType)
+) : ContentData(uuid, location, latitude, longitude, createdAt, lastModifiedAt, state, contentType)
 
 // The NoteData and Notes objects, used for DB storage
-@Entity(tableName = "note",
-    foreignKeys = [ForeignKey(entity = ContentObject::class,
+@Entity(
+    tableName = "note",
+    foreignKeys = [ForeignKey(
+        entity = ContentObject::class,
         parentColumns = arrayOf("uuid"),
         childColumns = arrayOf("parent_id"),
-        onDelete = ForeignKey.CASCADE)],
-    indices = [Index(value = ["parent_id"])])
+        onDelete = ForeignKey.CASCADE
+    )],
+    indices = [Index(value = ["parent_id"])]
+)
 data class NoteData(
     @ColumnInfo(name = "note_uuid")
     @PrimaryKey override val uuid: UUID = UUID(0, 0),
@@ -84,17 +96,28 @@ data class NoteData(
     override val state: String = "",
     @Embedded val note: Note
 ) :
-    ContentDataEntity (uuid, location, latitude, longitude, createdAt, lastModifiedAt, state, parentId, ContentType.GENERIC_NOTE )
+    ContentDataEntity(
+        uuid,
+        location,
+        latitude,
+        longitude,
+        createdAt,
+        lastModifiedAt,
+        state,
+        parentId,
+        ContentType.GENERIC_NOTE
+    )
 
 // This class works for both the return value REST API and the DB.
 data class Note(
     val uuid: UUID = UUID(0, 0),
     var title: String = "",
-    var text: String = "")
+    var text: String = ""
+)
 
 // Relations for the various content types
-abstract class ObjectRelationship (
-    open val container : ContentObject
+abstract class ObjectRelationship(
+    open val container: ContentObject
 )
 
 // Type converters
@@ -126,15 +149,16 @@ data class ObjectWithNote(
     @Embedded override val container: ContentObject,
     @Relation(
         parentColumn = "uuid",
-        entityColumn = "parent_id")
+        entityColumn = "parent_id"
+    )
     val note: NoteData
-) : ObjectRelationship (container)
+) : ObjectRelationship(container)
 
 @Database(entities = [ContentObject::class, NoteData::class], version = 3, exportSchema = false)
 @TypeConverters(UUIDConverter::class, DateConverter::class)
-abstract class PinDatabase: RoomDatabase() {
+abstract class PinDatabase : RoomDatabase() {
 
-    abstract fun objectDao (): ObjectDao
+    abstract fun objectDao(): ObjectDao
 
     @Dao
     interface ObjectDao {
@@ -156,11 +180,11 @@ abstract class PinDatabase: RoomDatabase() {
 
         @Transaction
         @Query("SELECT * FROM Object ORDER BY favorite DESC, userCreatedAt DESC")
-        fun getObjectsWithNotes (): Flow<List<ObjectWithNote>>
+        fun getObjectsWithNotes(): Flow<List<ObjectWithNote>>
 
         @Transaction
         @Query("SELECT * FROM Object WHERE uuid = :uuid")
-        fun getObjectWithNote (uuid: UUID): Flow<ObjectWithNote>
+        fun getObjectWithNote(uuid: UUID): Flow<ObjectWithNote>
 
         @Transaction
         @Query("DELETE FROM object WHERE uuid NOT IN (:idsToKeep)")
@@ -178,7 +202,7 @@ abstract class PinDatabase: RoomDatabase() {
         }
 
         @Transaction
-        fun insertWithNote(contentObjectFields : ContentObject) {
+        fun insertWithNote(contentObjectFields: ContentObject) {
             if (contentObjectFields.contentType == ContentType.GENERIC_NOTE) {
                 insertAll(listOf(contentObjectFields))
                 insertNotes(listOf(contentObjectFields.contentData as NoteData))

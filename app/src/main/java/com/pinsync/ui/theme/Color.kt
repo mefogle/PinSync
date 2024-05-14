@@ -1,4 +1,5 @@
 package com.pinsync.ui.theme
+
 import androidx.compose.ui.graphics.Color
 
 val primaryLight = Color(0xFF006875)
@@ -73,6 +74,7 @@ val surfaceContainerDark = Color(0xFF1B2122)
 val surfaceContainerHighDark = Color(0xFF252B2C)
 val surfaceContainerHighestDark = Color(0xFF303637)
 
+/*
 val primaryDarkMediumContrast = Color(0xFF86D7E6)
 val onPrimaryDarkMediumContrast = Color(0xFF001A1E)
 val primaryContainerDarkMediumContrast = Color(0xFF499CAA)
@@ -144,7 +146,7 @@ val surfaceContainerLowDarkHighContrast = Color(0xFF171D1E)
 val surfaceContainerDarkHighContrast = Color(0xFF1B2122)
 val surfaceContainerHighDarkHighContrast = Color(0xFF252B2C)
 val surfaceContainerHighestDarkHighContrast = Color(0xFF303637)
-
+*/
 
 
 

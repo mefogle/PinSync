@@ -50,7 +50,7 @@ abstract class PinSyncActivity : ComponentActivity() {
                             else {
                                 Toast.makeText(
                                     this,
-                                    "Error: " +  uiState.error,
+                                    "Error: " + uiState.error,
                                     Toast.LENGTH_LONG
                                 ).show()
                             }
@@ -60,6 +60,7 @@ abstract class PinSyncActivity : ComponentActivity() {
             }
         }
     }
+
     @Composable
-    abstract fun ActivityBody ()
+    abstract fun ActivityBody()
 }

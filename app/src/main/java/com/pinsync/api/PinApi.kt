@@ -64,10 +64,19 @@ object PinApi {
         override val state: String,
         val note: Note
     ) :
-        ContentData(uuid, location, latitude, longitude, createdAt, lastModifiedAt, state, ContentType.GENERIC_NOTE)
+        ContentData(
+            uuid,
+            location,
+            latitude,
+            longitude,
+            createdAt,
+            lastModifiedAt,
+            state,
+            ContentType.GENERIC_NOTE
+        )
 
     // We need a data class with just the title and text for the create & update DTOs
-    data class NoteCreateDTO (
+    data class NoteCreateDTO(
         val title: String,
         val text: String
     )

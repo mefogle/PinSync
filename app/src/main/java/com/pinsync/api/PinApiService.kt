@@ -12,24 +12,30 @@ import java.util.UUID
 interface PinApiService {
 
     @GET("notes")
-    suspend fun getNotes(@Query("page") page : Int = 0, @Query("size") size : Int = 20): PinApi.Content
+    suspend fun getNotes(
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 20
+    ): PinApi.Content
 
     @GET("memory/{uuid}")
     suspend fun getMemory(@Path("uuid") uuid: UUID): PinApi.Object
 
     @POST("memory/{uuid}/favorite")
-    suspend fun favorite(@Path("uuid") uuid: UUID) : Response<Unit>
+    suspend fun favorite(@Path("uuid") uuid: UUID): Response<Unit>
 
     @DELETE("memory/{uuid}")
-    suspend fun delete(@Path("uuid") uuid: UUID) : Response<Unit>
+    suspend fun delete(@Path("uuid") uuid: UUID): Response<Unit>
 
     @POST("memory/{uuid}/unfavorite")
-    suspend fun unfavorite(@Path("uuid") uuid: UUID) : Response<Unit>
+    suspend fun unfavorite(@Path("uuid") uuid: UUID): Response<Unit>
 
     @POST("note/{uuid}")
-    suspend fun updateNote(@Path("uuid") uuid: UUID, @Body note: PinApi.NoteCreateDTO) : PinApi.Object
+    suspend fun updateNote(
+        @Path("uuid") uuid: UUID,
+        @Body note: PinApi.NoteCreateDTO
+    ): PinApi.Object
 
     @POST("note/create")
-    suspend fun createNote(@Body note: PinApi.NoteCreateDTO) : PinApi.Object
+    suspend fun createNote(@Body note: PinApi.NoteCreateDTO): PinApi.Object
 
 }

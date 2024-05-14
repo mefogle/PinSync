@@ -19,9 +19,9 @@ class ShareActivity : PinSyncActivity() {
     @Composable
     override fun ActivityBody() {
         // Gather up any information that could be related to a sharing intent
-        val isShared : Boolean = (intent.action == Intent.ACTION_SEND)
-        var sharedText : String?
-        var sharedTitle : String?
+        val isShared: Boolean = (intent.action == Intent.ACTION_SEND)
+        val sharedText: String?
+        var sharedTitle: String?
         if (isShared) {
             sharedText = intent.getStringExtra(Intent.EXTRA_TEXT) ?: "No text shared"
             sharedTitle = intent.getStringExtra(Intent.EXTRA_TITLE)
@@ -31,7 +31,7 @@ class ShareActivity : PinSyncActivity() {
                 ) + " " + DateFormat.getTimeFormat(this).format(Date())
             }
             LaunchedEffect(Unit) {
-                lifecycleScope.launch (Dispatchers.IO){
+                lifecycleScope.launch(Dispatchers.IO) {
                     PinSyncApplication.notesRepository()
                         .createNote(Note(title = sharedTitle, text = sharedText))
                     finish()
@@ -63,8 +63,7 @@ class ShareActivity : PinSyncActivity() {
 
                 }
             )
-        }
-        else {
+        } else {
             finish()
         }
     }

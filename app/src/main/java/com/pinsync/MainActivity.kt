@@ -5,7 +5,7 @@ import com.pinsync.ui.PinSyncApp
 
 class MainActivity : PinSyncActivity() {
     @Composable
-    override fun ActivityBody () {
+    override fun ActivityBody() {
         PinSyncApp(viewModel = viewModel)
     }
 }

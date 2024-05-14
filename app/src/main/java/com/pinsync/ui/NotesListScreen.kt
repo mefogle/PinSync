@@ -14,50 +14,50 @@ import com.pinsync.ui.navigation.PinSyncRoute.NOTE_DETAIL
 import com.pinsync.viewmodel.NotesViewModel
 
 @Composable
-fun NotesListScreen (
+fun NotesListScreen(
     navController: NavController,
     viewModel: NotesViewModel,
     modifier: Modifier = Modifier
-)
-{
+) {
     val uiState by viewModel.listUiState.collectAsStateWithLifecycle()
     val newItems = uiState.notes
     Scaffold(
         floatingActionButton = {
             PinSyncFAB(onClick = {
                 viewModel.addNew()
-                navController.navigate(NOTE_DETAIL)})
+                navController.navigate(NOTE_DETAIL)
+            })
         })
     { innerPadding ->
-    newItems.let { content ->
-        LazyColumn (modifier.padding(innerPadding)) {
-            content.let { it ->
-                items(newItems.size) { noteIndex ->
-                    it[noteIndex].let { note ->
-                        NoteListItem(
-                            note.note,
-                            navigateToDetail = {
-                                viewModel.editExisting(note.container.uuid)
-                                navController.navigate(NOTE_DETAIL)
-                            },
-                            toggleFavorite = {
-                                viewModel.setFavorite(
-                                    note.container.uuid,
-                                    !note.container.favorite
-                                )
-                            },
-                            toggleSelection = {
-                                viewModel.toggleSelectedNote(note.note.uuid)
-                            },
-                            isSelected = viewModel.listUiState.value.selectedNotes.contains(
-                                note.note.uuid
-                            ),
-                            isFavorite = note.container.favorite
-                        )
+        newItems.let { content ->
+            LazyColumn(modifier.padding(innerPadding)) {
+                content.let { it ->
+                    items(newItems.size) { noteIndex ->
+                        it[noteIndex].let { note ->
+                            NoteListItem(
+                                note.note,
+                                navigateToDetail = {
+                                    viewModel.editExisting(note.container.uuid)
+                                    navController.navigate(NOTE_DETAIL)
+                                },
+                                toggleFavorite = {
+                                    viewModel.setFavorite(
+                                        note.container.uuid,
+                                        !note.container.favorite
+                                    )
+                                },
+                                toggleSelection = {
+                                    viewModel.toggleSelectedNote(note.note.uuid)
+                                },
+                                isSelected = viewModel.listUiState.value.selectedNotes.contains(
+                                    note.note.uuid
+                                ),
+                                isFavorite = note.container.favorite
+                            )
+                        }
                     }
                 }
             }
         }
     }
-}
 }

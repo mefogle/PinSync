@@ -13,7 +13,7 @@ interface NotesRepository {
 
     fun getNote(uuid: UUID): Flow<ObjectWithNote>
 
-    fun getObjectsWithNotes () : Flow<List<ObjectWithNote>>
+    fun getObjectsWithNotes(): Flow<List<ObjectWithNote>>
 
     suspend fun refreshNotes()
 
@@ -24,6 +24,6 @@ interface NotesRepository {
     suspend fun favoriteNote(uuid: UUID)
 
     suspend fun unfavoriteNote(uuid: UUID)
-    suspend fun updateNote(uuid: UUID, note : Note): Flow<ObjectWithNote>
+    suspend fun updateNote(uuid: UUID, note: Note): Flow<ObjectWithNote>
     suspend fun createNote(note: Note): Flow<ObjectWithNote>
 }

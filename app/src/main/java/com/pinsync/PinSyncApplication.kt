@@ -13,9 +13,9 @@ class PinSyncApplication : Application() {
         lateinit var db: PinDatabase
         private var instance: PinSyncApplication? = null
 
-        private lateinit var _notesRepository : NotesRepository
+        private lateinit var _notesRepository: NotesRepository
 
-        fun notesRepository() : NotesRepository = _notesRepository
+        fun notesRepository(): NotesRepository = _notesRepository
 
         //fun applicationContext(): Context = instance!!.applicationContext
     }

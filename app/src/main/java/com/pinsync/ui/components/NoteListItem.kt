@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StickyNote2
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Card
@@ -60,7 +59,7 @@ fun NoteListItem(
                     onLongClick = { toggleSelection() }
                 )
                 .clip(CardDefaults.shape),
-                colors = CardDefaults.cardColors(
+            colors = CardDefaults.cardColors(
                 containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
                 else MaterialTheme.colorScheme.surfaceVariant
             )
@@ -146,21 +145,21 @@ fun NoteListItem(
 //    }
 //}
 
-@Composable
-fun UnselectedImage(modifier: Modifier = Modifier) {
-    Box(
-        modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primary)
-    ) {
-        Icon(
-            Icons.AutoMirrored.Filled.StickyNote2,
-            contentDescription = stringResource(R.string.note_description),
-            modifier = Modifier
-                .size(24.dp)
-                .align(Alignment.Center),
-            tint = MaterialTheme.colorScheme.onPrimary
-        )
-    }
-}
+//@Composable
+//fun UnselectedImage(modifier: Modifier = Modifier) {
+//    Box(
+//        modifier
+//            .size(40.dp)
+//            .clip(CircleShape)
+//            .background(MaterialTheme.colorScheme.primary)
+//    ) {
+//        Icon(
+//            Icons.AutoMirrored.Filled.StickyNote2,
+//            contentDescription = stringResource(R.string.note_description),
+//            modifier = Modifier
+//                .size(24.dp)
+//                .align(Alignment.Center),
+//            tint = MaterialTheme.colorScheme.onPrimary
+//        )
+//    }
+//}

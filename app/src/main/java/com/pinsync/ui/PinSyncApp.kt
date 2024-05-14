@@ -34,7 +34,7 @@ private fun PinSyncNavigationWrapper(
 //    val navigationActions = remember(navController) {
 //        PinSyncNavigationActions(navController)
 //    }
- //   val navBackStackEntry by navController.currentBackStackEntryAsState()
+    //   val navBackStackEntry by navController.currentBackStackEntryAsState()
 //    val selectedDestination =
 //        navBackStackEntry?.destination?.route ?: PinSyncRoute.NOTES
 
@@ -66,7 +66,7 @@ fun SyncAppContent(
             PinSyncNavHost(
                 navController = navController,
                 viewModel = viewModel,
- //               closeDetailScreen = closeDetailScreen,
+                //               closeDetailScreen = closeDetailScreen,
                 modifier = Modifier.weight(1f),
             )
         }

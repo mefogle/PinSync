@@ -2,4 +2,10 @@
     <string name="app_name">PinSync</string>
     <string name="note_description">Note</string>
     <string name="favorite_description">Favorite</string>
+    <string name="add">Add</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
+    <string name="text">Text</string>
+    <string name="title">Title</string>
+    <string name="cancel">Cancel</string>
 </resources>
