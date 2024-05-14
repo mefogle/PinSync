@@ -14,7 +14,7 @@ fun mapObjectDtoToEntity(dto: PinApi.Object): ContentObject {
             }
 
             null -> {
-                Log.d("mapObjectDtoToEntity", "Encountered null object - returning empty Note")
+                Log.e("mapObjectDtoToEntity", "Encountered null object - returning empty Note")
                 NoteData(
                     UUID(0, 0),
                     dto.uuid,

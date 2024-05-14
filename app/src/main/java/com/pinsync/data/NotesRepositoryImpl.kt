@@ -5,12 +5,14 @@ import com.pinsync.PinSyncApplication
 import com.pinsync.api.PinApi
 import com.pinsync.api.PinApiService
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import java.util.Date
 import java.util.UUID
 
+@Suppress("UNNECESSARY_SAFE_CALL") // Needed to handle the occasional null object.
 class NotesRepositoryImpl(private val apiService: PinApiService) : NotesRepository {
     private val objectDao = PinSyncApplication.db.objectDao()
-    override fun getAllNotes() = flow { emit(apiService.getNotes()) }
+    private var mostRecentTimeStamp : Date = Date()
+    private var mostRecentRecordCount = 0
     override fun getNote(uuid: UUID): Flow<ObjectWithNote> {
         return objectDao.getObjectWithNote(uuid)
     }
@@ -36,6 +38,11 @@ class NotesRepositoryImpl(private val apiService: PinApiService) : NotesReposito
         var nextPage = 0
         while (moreData) {
             val container = apiService.getNotes(nextPage)
+            // If this is the first page, update our internal trackers
+            if (nextPage == 0) {
+                mostRecentTimeStamp = container.content[0]?.data?.createdAt ?: mostRecentTimeStamp
+                mostRecentRecordCount = container.totalElements
+            }
             val objectDtos = container.content
             allNotes.addAll(objectDtos)
             moreData = !container.last
@@ -59,6 +66,19 @@ class NotesRepositoryImpl(private val apiService: PinApiService) : NotesReposito
         } catch (e: Exception) {
             Log.e("NotesRepositoryImpl", "Unexpected error in refreshNotes: ", e)
         }
+    }
+
+    override suspend fun refreshIfNeeded() : Boolean {
+        // Perform a request to receive a single element.  This will be enough information to
+        // determine if we need to refresh based on whether there are newer records or the count
+        // has gone done.
+        val container = apiService.getNotes(page = 0, size = 1)
+       if ((mostRecentRecordCount != container.totalElements) ||
+            (mostRecentTimeStamp < (container.content[0]?.data?.createdAt ?: mostRecentTimeStamp))){
+            refreshNotes()
+            return true
+        }
+        return false
     }
 
     override suspend fun favoriteNote(uuid: UUID) {
@@ -88,6 +108,9 @@ class NotesRepositoryImpl(private val apiService: PinApiService) : NotesReposito
         val container = apiService.createNote(
             PinApi.NoteCreateDTO(note.title, note.text)
         )
+        // Manually update our trackers
+        mostRecentTimeStamp = container.data.createdAt
+        mostRecentRecordCount++
         val objectEntity = mapObjectDtoToEntity(container)
         objectDao.insertWithNote(objectEntity)
         return objectDao.getObjectWithNote(objectEntity.uuid)

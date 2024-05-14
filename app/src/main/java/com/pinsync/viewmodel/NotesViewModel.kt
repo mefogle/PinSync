@@ -18,6 +18,9 @@ import java.util.Timer
 import java.util.TimerTask
 import java.util.UUID
 
+const val TASK_REFRESH_INTERVAL_MS = 30000L // 30 seconds
+const val FULL_REFRESH_INTERVAL_MS = 1800*1000L // 30 minutes
+
 class NotesViewModel(private val notesRepository: NotesRepository) : ViewModel() {
 
     private val _listUiState = MutableStateFlow(NoteListUIState(loading = true))
@@ -26,6 +29,7 @@ class NotesViewModel(private val notesRepository: NotesRepository) : ViewModel()
     val detailUiState: StateFlow<NoteDetailUIState> = _detailUiState
 
     private var timer: Timer? = null
+    private var timeOfLastFullRefresh: Long = 0
 
     fun editExisting(noteId: UUID) {
         _detailUiState.value = NoteDetailUIState(loading = true)
@@ -133,9 +137,19 @@ class NotesViewModel(private val notesRepository: NotesRepository) : ViewModel()
         timer = Timer()
         timer?.schedule(object : TimerTask() {
             override fun run() {
-                viewModelScope.launch(Dispatchers.IO) { notesRepository.refreshNotes() }
+                viewModelScope.launch(Dispatchers.IO) {
+                    val refreshPerformed = notesRepository.refreshIfNeeded()
+                    if (refreshPerformed) {
+                        timeOfLastFullRefresh = System.currentTimeMillis()
+                    } else {
+                        if (System.currentTimeMillis() - timeOfLastFullRefresh > FULL_REFRESH_INTERVAL_MS) {
+                            notesRepository.refreshNotes()
+                            timeOfLastFullRefresh = System.currentTimeMillis()
+                        }
+                    }
+                }
             }
-        }, 0, 5000) // Schedule the task to run every 5 seconds
+        }, 0, TASK_REFRESH_INTERVAL_MS)// Schedule the task to run every 5 seconds
     }
 
     override fun onCleared() {

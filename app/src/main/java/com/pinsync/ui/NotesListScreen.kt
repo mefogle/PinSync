@@ -31,7 +31,7 @@ fun NotesListScreen(
     { innerPadding ->
         newItems.let { content ->
             LazyColumn(modifier.padding(innerPadding)) {
-                content.let { it ->
+                content.let {
                     items(newItems.size) { noteIndex ->
                         it[noteIndex].let { note ->
                             NoteListItem(
