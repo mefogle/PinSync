@@ -18,6 +18,7 @@ import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.Cookie
 import okhttp3.CookieJar
+import okhttp3.Dns
 import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -26,6 +27,9 @@ import okhttp3.Response
 import okio.IOException
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.net.Inet4Address
+import java.net.InetAddress
+import java.net.UnknownHostException
 import java.util.Date
 import java.util.UUID
 
@@ -188,6 +192,7 @@ object PinApi {
 //        .addInterceptor(loggingInterceptor)
 //        .cache(cache)
 //        .addInterceptor(offlineInterceptor)
+        .dns(Ipv4OnlyDns())
         .addInterceptor(AuthInterceptor())
 //        .addNetworkInterceptor(CacheInterceptor()) // Adds Cache-Control header for responses
         .cookieJar(WebViewCookieHandler())
@@ -199,6 +204,7 @@ object PinApi {
 //        .cache(cache)
 //        .addInterceptor(offlineInterceptor)
 //        .addNetworkInterceptor(CacheInterceptor()) // Adds Cache-Control header for responses
+        .dns(Ipv4OnlyDns())
         .cookieJar(WebViewCookieHandler())
         .build()
 
@@ -265,6 +271,26 @@ object PinApi {
             val urlString = url.toString()
             val cookiesString = webkitCookieManager.getCookie(urlString)
             return cookiesString?.split("; ")?.mapNotNull { Cookie.parse(url, it) } ?: emptyList()
+        }
+    }
+
+    // Filter out ipv6 addresses.  There seems to be some issue with these, particularly when
+    // using Samsung devices.
+    class Ipv4OnlyDns : Dns {
+        override fun lookup(hostname: String): List<InetAddress> {
+            return try {
+                // Get all IP addresses for the hostname
+                val allAddresses = Dns.SYSTEM.lookup(hostname)
+                // Filter out IPv6 addresses
+                val ipv4Addresses = allAddresses.filter { it is Inet4Address }
+                // If no IPv4 addresses are found, throw an exception
+                if (ipv4Addresses.isEmpty()) {
+                    throw UnknownHostException("No IPv4 address found for $hostname")
+                }
+                ipv4Addresses
+            } catch (e: Exception) {
+                throw UnknownHostException("Failed to resolve $hostname: ${e.message}")
+            }
         }
     }
 
