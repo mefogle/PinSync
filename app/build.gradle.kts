@@ -12,7 +12,7 @@ android {
         applicationId = "com.pinsync"
         minSdk = 23
         targetSdk = 34
-        versionCode = 2
+        versionCode = 3
         versionName = "0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
