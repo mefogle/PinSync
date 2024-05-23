@@ -110,7 +110,9 @@ data class NoteData(
 
 // This class works for both the return value REST API and the DB.
 data class Note(
-    val uuid: UUID = UUID(0, 0),
+    // Handles the case of malformed JSON coming from the server.  Turns out that
+    // notes don't really need a UUID, so we can just ignore it.
+    //val uuid: UUID? = UUID(0, 0),
     var title: String = "",
     var text: String = ""
 )
@@ -154,7 +156,7 @@ data class ObjectWithNote(
     val note: NoteData
 ) : ObjectRelationship(container)
 
-@Database(entities = [ContentObject::class, NoteData::class], version = 3, exportSchema = false)
+@Database(entities = [ContentObject::class, NoteData::class], version = 6, exportSchema = false)
 @TypeConverters(UUIDConverter::class, DateConverter::class)
 abstract class PinDatabase : RoomDatabase() {
 

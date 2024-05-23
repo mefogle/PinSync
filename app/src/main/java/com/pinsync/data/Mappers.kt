@@ -24,7 +24,7 @@ fun mapObjectDtoToEntity(dto: PinApi.Object): ContentObject {
                     Date(),
                     Date(),
                     "",
-                    Note(UUID(0, 0), "", "")
+                    Note("", "")
                 )
             }
         }

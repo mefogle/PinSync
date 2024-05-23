@@ -216,11 +216,36 @@ object PinApi {
     // The adapter that only processes SessionInfo JSON.
     private val sessionInfoAdapter = Moshi.Builder().build().adapter(SessionInfo::class.java)
 
+    // There's occasionally some malformed JSON coming from the server that we need to deal with,
+    // most often with null values. So we'll create a custom adapter to handle this.
+    class NullToEmptyStringAdapter {
+
+        @FromJson
+        fun fromJson(reader: JsonReader): String {
+            if (reader.peek() == JsonReader.Token.NULL) {
+                reader.nextNull<Unit>() // Consume the null.
+                return ""
+            }
+            return reader.nextString()
+        }
+
+        @ToJson
+        fun toJson(writer: JsonWriter, value: String?) {
+            writer.value(value)
+        }
+    }
+
     // Java UUIDs can't be parsed natively so we need this special adapter.
     private class UUIDAdapter : JsonAdapter<UUID>() {
         @FromJson
         override fun fromJson(reader: JsonReader): UUID? {
-            return UUID.fromString(reader.nextString())
+            return try {
+                UUID.fromString(reader.nextString())
+            } catch (e: JsonDataException) {
+                // For some reason, after deleting a note from humane.center, other notes started
+                // coming through with null UUIDs.  This is an attempt to handle that.
+                UUID.randomUUID()
+            }
         }
 
         @ToJson
@@ -237,7 +262,9 @@ object PinApi {
                 .withSubtype(NoteData::class.java, ContentType.GENERIC_NOTE.name)
         )
         .add(KotlinJsonAdapterFactory())
-        .add(Date::class.java, Rfc3339DateJsonAdapter()).build()
+        .add(Date::class.java, Rfc3339DateJsonAdapter())
+        .add(NullToEmptyStringAdapter())
+        .build()
 
     // And retrofit handles the REST communications.
     private val retrofit: Retrofit = Retrofit.Builder()
