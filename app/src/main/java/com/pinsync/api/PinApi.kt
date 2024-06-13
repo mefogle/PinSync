@@ -136,7 +136,7 @@ object PinApi {
     // If this cookie is present in the cookie store, it means that we should be authenticated
     // (unless the session has expired, in which case we'll get a 403 and make another session
     // request.
-    private const val AUTHCOOKIE = "__Secure-next-auth.session-token.0"
+    private const val AUTHCOOKIE = "__Secure-authjs.session-token.0"
 
     // Just leave this here in case we need it for debugging.
 
