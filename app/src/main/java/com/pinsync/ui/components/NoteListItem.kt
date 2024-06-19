@@ -97,10 +97,10 @@ fun NoteListItem(
                         )
                         Text(
                             text = DateFormat.getDateFormat(LocalContext.current)
-                                .format(it.createdAt)
+                                .format(it.lastModifiedAt)
                                     + " " +
                                     DateFormat.getTimeFormat(LocalContext.current)
-                                        .format(it.createdAt),
+                                        .format(it.lastModifiedAt),
                             style = MaterialTheme.typography.labelMedium,
                         )
                     }

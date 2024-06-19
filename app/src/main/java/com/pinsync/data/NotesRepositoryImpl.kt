@@ -40,7 +40,7 @@ class NotesRepositoryImpl(private val apiService: PinApiService) : NotesReposito
             val container = apiService.getNotes(nextPage)
             // If this is the first page, update our internal trackers
             if (nextPage == 0) {
-                mostRecentTimeStamp = container.content[0]?.data?.createdAt ?: mostRecentTimeStamp
+                mostRecentTimeStamp = container.content[0]?.data?.lastModifiedAt ?: mostRecentTimeStamp
                 mostRecentRecordCount = container.totalElements
             }
             val objectDtos = container.content
@@ -74,7 +74,7 @@ class NotesRepositoryImpl(private val apiService: PinApiService) : NotesReposito
         // has gone done.
         val container = apiService.getNotes(page = 0, size = 1)
        if ((mostRecentRecordCount != container.totalElements) ||
-            (mostRecentTimeStamp < (container.content[0]?.data?.createdAt ?: mostRecentTimeStamp))){
+            (mostRecentTimeStamp < (container.content[0]?.data?.lastModifiedAt ?: mostRecentTimeStamp))){
             refreshNotes()
             return true
         }

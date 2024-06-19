@@ -181,7 +181,7 @@ abstract class PinDatabase : RoomDatabase() {
         fun delete(contentObjectRef: ContentObject)
 
         @Transaction
-        @Query("SELECT * FROM Object ORDER BY favorite DESC, userCreatedAt DESC")
+        @Query("SELECT * FROM Object ORDER BY favorite DESC, userLastModified DESC")
         fun getObjectsWithNotes(): Flow<List<ObjectWithNote>>
 
         @Transaction
